@@ -27,14 +27,11 @@ import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Properties;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
@@ -69,13 +66,12 @@ public class TextToHFileMapReduce implements Tool {
         job.setMapOutputKeyClass(ImmutableBytesWritable.class);
         job.setMapOutputValueClass(KeyValue.class);
         job.setInputFormatClass(TextInputFormat.class);
-        job.setNumReduceTasks(0);
         for (String p : input.split(",")) {
             Path path = new Path(p);
             FileInputFormat.addInputPath(job, path);
         }
         FileOutputFormat.setOutputPath(job, new Path(output));
-        Configuration hbaseConf = HBaseConfiguration.create();
+        Configuration hbaseConf = HBaseConfiguration.create(conf);
         Connection hbaseConnection = ConnectionFactory.createConnection(hbaseConf);
         Table table = hbaseConnection.getTable(TableName.valueOf(tableName));
         RegionLocator regionLocator = hbaseConnection.getRegionLocator(TableName.valueOf(tableName));
@@ -124,6 +120,10 @@ public class TextToHFileMapReduce implements Tool {
             Long ts = 0L;
             if(null != fonava){
                 String splitPath = ((FileSplit)context.getInputSplit()).getPath().toString();
+                if(splitPath.indexOf("data_date=")==-1){
+                    logger.fatal("Input file path does not contain data_date keyword.  Please check input file path!");
+                    System.exit(-1);    // 如果文件路径不含有 data_date 关键字则直接退出 MapReduce
+                }
                 try {
                     ts = DateUtil.convertStringToUnixTime(splitPath,"yyyyMMdd","data_date=(\\d{8})");  // data_date=yyyyMMdd
                     if(ts==0L)
