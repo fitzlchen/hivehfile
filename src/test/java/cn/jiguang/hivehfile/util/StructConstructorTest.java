@@ -4,6 +4,8 @@ import cn.jiguang.hivehfile.exception.ColumnNumMismatchException;
 import cn.jiguang.hivehfile.struct.FonovaStruct;
 import org.junit.Test;
 import static org.junit.Assert.*;
+
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -15,7 +17,7 @@ import java.util.Map;
  */
 public class StructConstructorTest {
     @Test
-    public void testParse() throws ClassNotFoundException, ColumnNumMismatchException, InstantiationException, IllegalAccessException {
+    public void testParse() throws ClassNotFoundException, ColumnNumMismatchException, InstantiationException, IllegalAccessException, InvocationTargetException {
         String input = "28e46edd676870dd\u0001重庆市\u0001中国\u00010\u00010\u00010\u0001重庆斯威特时尚酒店\u0002赛格尔酒店\u0002重庆希曼宾馆\u0002重庆洲际酒店\u0002家心怡酒店解放碑店\u0002扬子岛酒店\u00010\u00010\u00010\u00010\u00013\u0001229227\u00010\u00010\u00012\u0001152818\u00011\u000176409";
         // construct reference
         FonovaStruct reference = new FonovaStruct();
@@ -53,5 +55,6 @@ public class StructConstructorTest {
         List list = StructConstructor.assemblyColumnList(columnTypeString);
         FonovaStruct generated = (FonovaStruct) StructConstructor.parse(input,"cn.jiguang.hivehfile.struct.FonovaStruct",list);
         System.out.println(generated.equals(reference));
+        System.out.println((String) StructConstructor.invokeGet(generated,"imei"));
     }
 }

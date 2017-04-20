@@ -13,8 +13,6 @@ import org.junit.Test;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import static  cn.jiguang.hivehfile.mapreduce.TextToHFileMapReduce.*;
@@ -53,9 +51,10 @@ public class TextToHFileMapReduceTest {
         System.out.println(ts.toString());
     }
 
-    @Test
+//    @Test
     public void testMapper(){
         ImmutableBytesWritable expectedRowKey = new ImmutableBytesWritable(Bytes.toBytes("28e46edd676870dd"));
         KeyValue expectedKv = new KeyValue(Bytes.toBytes("28e46edd676870dd"),Bytes.toBytes("A"),Bytes.toBytes("重庆市"));
     }
+
 }

@@ -8,7 +8,14 @@ import cn.jiguang.hivehfile.util.DateUtil;
 import cn.jiguang.hivehfile.util.StructConstructor;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.KeyValue;
+import org.apache.hadoop.hbase.TableName;
+import org.apache.hadoop.hbase.client.Connection;
+import org.apache.hadoop.hbase.client.ConnectionFactory;
+import org.apache.hadoop.hbase.client.RegionLocator;
+import org.apache.hadoop.hbase.client.Table;
+import org.apache.hadoop.hbase.mapreduce.HFileOutputFormat2;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
@@ -27,7 +34,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.Properties;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
@@ -40,15 +46,23 @@ import static cn.jiguang.hivehfile.util.StructConstructor.invokeGet;
  */
 public class TextToHFileMapReduce implements Tool {
     static Logger logger  = LogManager.getLogger(TextToHFileMapReduce.class);
-    private static SimpleDateFormat dateFormattor = new SimpleDateFormat("yyyyMMdd");
     private Configuration conf = new Configuration();
-    private Properties prop = new Properties();
 
+    /**
+     * 运行MapReduce的入口
+     * @param args 第一个参数是目标 HBase 表名；第二个参数是 HDFS 读取路径； 第三个参数是 HDFS 写入路径
+     * @return
+     * @throws Exception
+     */
     public int run(String[] args) throws Exception {
-        FileInputStream ins = new FileInputStream("config.properties");
-        prop.load(ins);
-        String input = args[0];
-        String output = args[1];
+        String tableName = args[0];
+        String input = args[1];
+        String output = args[2];
+        conf.set("hbase.zookeeper.quorum", "192.168.254.71,192.168.254.72,192.168.254.73");
+        conf.set("hbase.zookeeper.property.clientPort", "2181");
+        conf.set("hbase.zookeeper.property.maxClientCnxns", "400");
+        conf.set("zookeeper.znode.parent", "/hbase");
+
         Job job = Job.getInstance(conf);
         job.setJarByClass(TextToHFileMapReduce.class);
         job.setMapperClass(HFileMapper.class);
@@ -61,7 +75,11 @@ public class TextToHFileMapReduce implements Tool {
             FileInputFormat.addInputPath(job, path);
         }
         FileOutputFormat.setOutputPath(job, new Path(output));
-
+        Configuration hbaseConf = HBaseConfiguration.create();
+        Connection hbaseConnection = ConnectionFactory.createConnection(hbaseConf);
+        Table table = hbaseConnection.getTable(TableName.valueOf(tableName));
+        RegionLocator regionLocator = hbaseConnection.getRegionLocator(TableName.valueOf(tableName));
+        HFileOutputFormat2.configureIncrementalLoad(job, table, regionLocator);
         if (!job.waitForCompletion(true)) {
             logger.error("Failed, input:" + input + ", output:" + output);
             return -1;
@@ -92,7 +110,7 @@ public class TextToHFileMapReduce implements Tool {
                     ",dur_all_clinic:bigint";
             FonovaStruct fonava = null;
             try {
-                FonovaStruct fonova = (FonovaStruct) StructConstructor.parse(stringValue,
+                fonava = (FonovaStruct) StructConstructor.parse(stringValue,
                         "cn.jiguang.hivehfile.struct.FonovaStruct",StructConstructor.assemblyColumnList(struct));
             } catch (ClassNotFoundException e) {
                 logger.error(e.getMessage());
@@ -105,9 +123,11 @@ public class TextToHFileMapReduce implements Tool {
             }
             Long ts = 0L;
             if(null != fonava){
-                String splitPath = ((FileSplit)context.getInputSplit()).getPath().getName();
+                String splitPath = ((FileSplit)context.getInputSplit()).getPath().toString();
                 try {
                     ts = DateUtil.convertStringToUnixTime(splitPath,"yyyyMMdd","data_date=(\\d{8})");  // data_date=yyyyMMdd
+                    if(ts==0L)
+                        logger.fatal("Can not generate timestamp. Please check input file path!");
                 } catch (ParseException e) {
                     logger.error(e.getMessage());
                 }

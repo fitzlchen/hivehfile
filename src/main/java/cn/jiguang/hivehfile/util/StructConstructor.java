@@ -28,7 +28,6 @@ public class StructConstructor {
         Object obj = clazz.newInstance();
         for(Field field:fields){
             if(isContains(columnMap,field.getName())){
-                System.out.println(field.getName()+":"+data.get(field.getName()));
                 invokeSet(obj,field.getName(),data.get(field.getName()));
             }
         }
@@ -120,7 +119,7 @@ public class StructConstructor {
             sb.append("get");
             sb.append(fieldName.substring(0, 1).toUpperCase());
             sb.append(fieldName.substring(1));
-            Method method = objectClass.getMethod(sb.toString(), parameterTypes);
+            Method method = objectClass.getDeclaredMethod(sb.toString(), new Class[]{});
             return method;
         } catch (Exception e) {
             e.printStackTrace();
@@ -154,7 +153,7 @@ public class StructConstructor {
      */
     public static Object invokeGet(Object o,String fieldName) throws InvocationTargetException, IllegalAccessException {
         Method method = getGetMethod(o.getClass(), fieldName);
-        Object result = method.invoke(o);
+        Object result = method.invoke(o, new Object[]{});
         return result;
     }
 
