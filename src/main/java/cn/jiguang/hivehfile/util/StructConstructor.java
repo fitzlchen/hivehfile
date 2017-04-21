@@ -137,7 +137,7 @@ public class StructConstructor {
     private static void invokeSet(Object o, String fieldName, Object value) {
         Method method = getSetMethod(o.getClass(), fieldName);
         try {
-            method.invoke(o, new Object[] { value });
+            method.invoke(o,  value);
         } catch (Exception e) {
             e.printStackTrace();
         }

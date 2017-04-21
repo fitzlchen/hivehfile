@@ -3,13 +3,10 @@ package cn.jiguang.hivehfile.util;
 import cn.jiguang.hivehfile.exception.ColumnNumMismatchException;
 import cn.jiguang.hivehfile.struct.FonovaStruct;
 import org.junit.Test;
-import static org.junit.Assert.*;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by jiguang

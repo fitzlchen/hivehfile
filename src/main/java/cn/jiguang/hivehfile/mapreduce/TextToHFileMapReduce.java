@@ -32,6 +32,8 @@ import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
@@ -151,12 +153,12 @@ public class TextToHFileMapReduce implements Tool {
                         /*
                          * array为[]不写入
                          */
-                        if( invokeGet(fonava,field) instanceof Array){
-                           if( ((ArrayList) invokeGet(fonava,field)).size() == 0 ){
+                        if( invokeGet(fonava,field) instanceof List){
+                           if( ((List) invokeGet(fonava,field)).size() == 0 ){
                                    continue;
                              }else{
                                kv = new KeyValue(Bytes.toBytes(fonava.getImei()),Bytes.toBytes("A")
-                                       ,Bytes.toBytes(field),ts, Bytes.toBytes(ArrayUtil.printArrayListElements((ArrayList) invokeGet(fonava,field))));
+                                       ,Bytes.toBytes(field),ts, Bytes.toBytes(ArrayUtil.printArrayListElements((List) invokeGet(fonava,field))));
                            }
                         }
                         /*
@@ -167,7 +169,7 @@ public class TextToHFileMapReduce implements Tool {
                                 continue;
                             }else{
                                 kv = new KeyValue(Bytes.toBytes(fonava.getImei()),Bytes.toBytes("A")
-                                        ,Bytes.toBytes(field),ts, Bytes.toBytes((Long)invokeGet(fonava,field)));
+                                        ,Bytes.toBytes(field),ts, Bytes.toBytes((invokeGet(fonava,field)).toString()));
                             }
                         }
                         if(kv != null) context.write(rowKey,kv);
