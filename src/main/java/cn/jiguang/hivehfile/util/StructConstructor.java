@@ -53,7 +53,13 @@ public class StructConstructor {
                 }else if(type.equals("bigint")){
                     value = Long.parseLong(values[i]);
                 } else if(type.equals("array")){
-                    value = Arrays.asList(values[i].split("\\x02"));
+                    String[] subString = values[i].split("\\x02");
+                    ArrayList<String> arr = new ArrayList<String>();
+                    for(String $s:subString){
+                        if( !$s.equals("") ){
+                            arr.add($s);
+                        }
+                    }
                 }
                 map.put(name,value);
                 i++;
