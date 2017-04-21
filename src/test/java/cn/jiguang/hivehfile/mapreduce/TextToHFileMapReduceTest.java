@@ -51,11 +51,4 @@ public class TextToHFileMapReduceTest {
         System.out.println(ts.toString());
     }
 
-    @Test
-    public void testMapper(){
-//        ImmutableBytesWritable expectedRowKey = new ImmutableBytesWritable(Bytes.toBytes("28e46edd676870dd"));
-//        KeyValue expectedKv = new KeyValue(Bytes.toBytes("28e46edd676870dd"),Bytes.toBytes("A"),Bytes.toBytes(""),,Bytes.toBytes("重庆市"));
-
-    }
-
 }

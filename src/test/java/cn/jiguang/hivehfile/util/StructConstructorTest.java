@@ -15,10 +15,12 @@ import java.util.List;
 public class StructConstructorTest {
     @Test
     public void testParse() throws ClassNotFoundException, ColumnNumMismatchException, InstantiationException, IllegalAccessException, InvocationTargetException {
-        String input = "28e46edd676870dd\u0001重庆市\u0001中国\u00010\u00010\u00010\u0001重庆斯威特时尚酒店\u0002赛格尔酒店\u0002重庆希曼宾馆\u0002重庆洲际酒店\u0002家心怡酒店解放碑店\u0002扬子岛酒店\u00010\u00010\u00010\u00010\u00013\u0001229227\u00010\u00010\u00012\u0001152818\u00011\u000176409";
+//        String input = "28e46edd676870dd\u0001重庆市\u0001中国\u00010\u00010\u00010\u0001重庆斯威特时尚酒店\u0002赛格尔酒店\u0002重庆希曼宾馆\u0002重庆洲际酒店\u0002家心怡酒店解放碑店\u0002扬子岛酒店\u00010\u00010\u00010\u00010\u00013\u0001229227\u00010\u00010\u00012\u0001152818\u00011\u000176409";
+        String input = "000000901163758\u0001郴州市\u0001中国\u00010\u00010\u00010\u0001\u00010\u00010\u00010\u00010\u00012\u00017584\u00010\u00010\u00012\u00017584\u00010\u00010";
         // construct reference
         FonovaStruct reference = new FonovaStruct();
         ArrayList<String> city_list = new ArrayList<String>(),country_list = new ArrayList<String>(),sleep_loc = new ArrayList<String>();
+        /*
         city_list.add("重庆市");
         country_list.add("中国");
         sleep_loc.add("重庆斯威特时尚酒店");
@@ -46,6 +48,32 @@ public class StructConstructorTest {
         reference.setDur_all_hospital_profess(152818);
         reference.setVisit_times_clinic(1);
         reference.setDur_all_clinic(76409);
+*/
+
+        country_list.add("中国");
+        city_list.add("郴州市");
+        sleep_loc.add("意发宾馆北楼");
+        sleep_loc.add("厚道酒店");
+        sleep_loc.add("北京绿城奥克伍德华庭酒店公寓");
+        reference.setImei("000000901163758");
+        reference.setCity_list(city_list);
+        reference.setCountry_list(country_list);
+        reference.setApp_count(0);
+        reference.setApp_tour_count(0);
+        reference.setApp_hotel_count(0);
+        reference.setSleep_loc(sleep_loc);
+        reference.setApp_fly_count(0);
+        reference.setApp_train_count(0);
+        reference.setVisit_times_car(0);
+        reference.setDur_all_car(0);
+        reference.setVisit_times_medical_instit(0);
+        reference.setDur_all_medical_instit(7584);
+        reference.setVisit_times_hospital_compre(0);
+        reference.setDur_all_hospital_compre(0);
+        reference.setVisit_times_hospital_profess(0);
+        reference.setDur_all_hospital_profess(7584);
+        reference.setVisit_times_clinic(0);
+        reference.setDur_all_clinic(0);
 
         // compare
         String columnTypeString = "imei:string,city_list:array,country_list:array,app_count:bigint,app_tour_count:bigint,app_hotel_count:bigint,sleep_loc:array,app_fly_count:bigint,app_train_count:bigint,visit_times_car:bigint,dur_all_car:bigint,visit_times_medical_instit:bigint,dur_all_medical_instit:bigint,visit_times_hospital_compre:bigint,dur_all_hospital_compre:bigint,visit_times_hospital_profess:bigint,dur_all_hospital_profess:bigint,visit_times_clinic:bigint,dur_all_clinic:bigint";

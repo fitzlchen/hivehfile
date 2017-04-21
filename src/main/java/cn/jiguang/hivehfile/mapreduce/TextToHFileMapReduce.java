@@ -140,15 +140,15 @@ public class TextToHFileMapReduce implements Tool {
                  * TimeStamp 固定为 数据日期，即data_date
                  * Value 固定为 columnValue
                  */
-                KeyValue kv = null;
                 ImmutableBytesWritable rowKey = new ImmutableBytesWritable(Bytes.toBytes(fonava.getImei()));
                 try {
                     for(String field:StructConstructor.getStructFields("cn.jiguang.hivehfile.struct.FonovaStruct")){
+                        KeyValue kv = null;
                         /*
                          * imei为空和imei以iPhone开头的不写入
                          */
                         if(fonava.getImei()==null || fonava.getImei()=="" || fonava.getImei().startsWith("iPhone")){
-                            continue;
+                            break;
                         }
                         /*
                          * array为[]不写入
@@ -165,7 +165,7 @@ public class TextToHFileMapReduce implements Tool {
                          * int为0的不写入
                          */
                         if( invokeGet(fonava,field) instanceof Long){
-                            if( (Long) invokeGet(fonava,field) == 0){
+                            if( (Long) invokeGet(fonava,field) == 0L){
                                 continue;
                             }else{
                                 kv = new KeyValue(Bytes.toBytes(fonava.getImei()),Bytes.toBytes("A")
