@@ -60,6 +60,7 @@ public class StructConstructor {
                             arr.add($s);
                         }
                     }
+                    value = arr;
                 }
                 map.put(name,value);
                 i++;
