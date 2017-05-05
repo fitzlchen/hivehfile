@@ -2,10 +2,12 @@ package cn.jiguang.hivehfile.mapreduce;
 
 import cn.jiguang.hivehfile.util.XmlUtil;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hbase.KeyValue;
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.util.Tool;
 import org.apache.log4j.LogManager;
@@ -65,20 +67,35 @@ public class GenericMapReduce implements Tool{
             hbaseClientPort = XmlUtil.extractHbaseClientPort(document);
             hbaseMaxClientCnxns = XmlUtil.extractHbaseMaxClientCnxns(document);
             hbaseParent = XmlUtil.extractHbaseParent(document);
+            configuration.set("hbase.zookeeper.quorum", hbaseQuorum);
+            configuration.set("hbase.zookeeper.property.clientPort", hbaseClientPort);
+            configuration.set("hbase.zookeeper.property.maxClientCnxns", hbaseMaxClientCnxns);
+            configuration.set("zookeeper.znode.parent", hbaseParent);
+            // 读取分布式缓存文件
+            URI[] uris = Job.getInstance(configuration).getCacheFiles();
+            for(URI $u : uris){
+                if("".equals($u)){
+
+                    logger.info("Successfully read distributedcache file:");
+                    break;
+                }
+            }
         }
 
         @Override
         public void map(LongWritable key, Text value, Context context){
             String inputString = value.toString();
-            configuration.set("hbase.zookeeper.quorum", hbaseQuorum);
-            configuration.set("hbase.zookeeper.property.clientPort", hbaseClientPort);
-            configuration.set("hbase.zookeeper.property.maxClientCnxns", hbaseMaxClientCnxns);
-            configuration.set("zookeeper.znode.parent", hbaseParent);
+
 
         }
     }
 
-    public int run(String[] strings) throws Exception {
+    public int run(String[] args) throws Exception {
+        Job job  = new Job();
+        job.addCacheFile(new Path(args[0]).toUri());
+        job.setJarByClass(GenericMapReduce.class);
+        job.setMapperClass(GenericMapper.class);
+
         return 0;
     }
 
