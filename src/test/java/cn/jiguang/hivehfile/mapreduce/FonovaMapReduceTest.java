@@ -2,7 +2,6 @@ package cn.jiguang.hivehfile.mapreduce;
 
 import org.apache.hadoop.hbase.KeyValue;
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
-import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mrunit.mapreduce.MapDriver;
@@ -15,12 +14,12 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import static  cn.jiguang.hivehfile.mapreduce.TextToHFileMapReduce.*;
+import static cn.jiguang.hivehfile.mapreduce.FonovaMapReduce.*;
 /**
  * Created by jiguang
  * Date: 2017/4/20
  */
-public class TextToHFileMapReduceTest {
+public class FonovaMapReduceTest {
     MapDriver<LongWritable,Text,ImmutableBytesWritable,KeyValue> mapDriver;
     @Before
     public void setup(){
@@ -37,9 +36,9 @@ public class TextToHFileMapReduceTest {
         Assert.assertEquals("jjs,uuii,282",list.toString().substring(1,list.toString().length()-1).replace(" ",""));
     }
 
-//    @Test
+    @Test
     public void testDateExtract() throws ParseException {
-        String inputString="/user/hive/warehouse/fosunapp.db/fosun_fonova/data_date=20170310/001070_0";
+        String inputString="/user/hive/warehouse/fosunapp.db/fosun_fonova/data_date=20170423/001070_0";
         SimpleDateFormat dateFormattor = new SimpleDateFormat("yyyyMMdd");
         Matcher matcher = Pattern.compile("data_date=(\\d{8})").matcher(inputString);
         String mStr = null;
