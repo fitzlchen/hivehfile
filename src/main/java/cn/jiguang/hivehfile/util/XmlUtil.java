@@ -17,17 +17,51 @@ public class XmlUtil {
      * @param document
      * @return
      */
-    public static ArrayList<Map<String,String>> extractHiveStruct(Document document){
-        ArrayList<Map<String,String>> result = new ArrayList<Map<String, String>>();
-        Iterator<Element> iterator = document.getRootElement().element("hive-struct").elementIterator();
+    public static ArrayList<HashMap<String,String>> extractMappingInfo(Document document){
+        ArrayList<HashMap<String,String>> result = new ArrayList<HashMap<String, String>>();
+        Iterator<Element> iterator = document.getRootElement().element("mapping-info").elementIterator();
         while (iterator.hasNext()){
             Element e = iterator.next();
+            /*
+             * 字段映射时，Hive字段名和字段类型必填
+             * Hive字段可能没有对应的hbase字段，也没有rowkey
+             */
             HashMap<String,String> columnMap = new HashMap<String, String>();
-            columnMap.put("name",e.elementText("column-name"));
-            columnMap.put("type",e.elementText("column-type"));
+            columnMap.put("hive-column-name",e.elementText("hive-column-name"));
+            columnMap.put("hive-column-type",e.elementText("hive-column-type"));
+            if(e.element("hbase-column-family")!=null && !"".equals(e.elementText("hbase-column-family").trim())){
+                columnMap.put("hbase-column-family",e.elementText("hbase-column-family"));
+            }
+            if(e.element("hbase-column-qualifier")!=null && !"".equals(e.elementText("hbase-column-qualifier").trim())){
+                columnMap.put("hbase-column-qualifier",e.elementText("hbase-column-qualifier"));
+            }
+            if(e.element("rowkey")!=null && "true".equals(e.elementText("rowkey").trim().toLowerCase())){
+                columnMap.put("rowkey","true");
+            }
             result.add(columnMap);
         }
         return result;
+    }
+
+
+    /**
+     * 获取rowkey字段的名称，当存在多个rowkey时返回null
+     * @param document
+     * @return
+     */
+    public static String extractRowKeyColumnName(Document document){
+        ArrayList<String> rowkeyList = new ArrayList<String>();
+        ArrayList<HashMap<String,String>> mappingInfo = extractMappingInfo(document);
+        for(HashMap<String,String> $m : mappingInfo){
+            if($m.containsKey("rowkey")){
+                rowkeyList.add($m.get("hive-column-name"));
+            }
+        }
+        if(rowkeyList.size()!=1){
+            return null;
+        }else{
+            return rowkeyList.get(0);
+        }
     }
 
     /**
@@ -109,5 +143,18 @@ public class XmlUtil {
      */
     public static String extractHbaseColumnFamily(Document document){
         return document.getRootElement().elementText("htable-columnfamily");
+    }
+
+    /**
+     * 解析DOM，获取分隔符设定信息
+     * @param document
+     * @return
+     */
+    public static HashMap<String,String> extractDelimiterCollection(Document document){
+        HashMap<String,String> result = new HashMap<String, String>();
+        result.put("fields-demiliter",document.getRootElement().elementText("filed-delimiter"));
+        result.put("collection-item-delimiter",document.getRootElement().elementText("collection-item-delimiter"));
+        result.put("mapkey-delimiter",document.getRootElement().elementText("mapkey-delimiter"));
+        return result;
     }
 }

@@ -2,6 +2,8 @@ package cn.jiguang.hivehfile.util;
 
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
+import org.dom4j.DocumentHelper;
+import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
 import org.junit.Before;
 import org.junit.Test;
@@ -26,20 +28,23 @@ public class XmlUtilTest {
         document = reader.read(config);
     }
 
-//    @Test
+    @Test
     public void testExractHiveStruct(){
-        ArrayList<Map<String,String>>  expectedArrayList = new ArrayList<Map<String, String>>();
+        ArrayList<HashMap<String,String>>  expectedArrayList = new ArrayList<HashMap<String, String>>();
         HashMap<String,String>
                 expectedMap1 = new HashMap<String, String>()
                 ,expectedMap2 = new HashMap<String, String>();
-        expectedMap1.put("name","imei");
-        expectedMap1.put("type","string");
-        expectedMap2.put("name","value");
-        expectedMap2.put("type","string");
+        expectedMap1.put("hive-column-name","imei");
+        expectedMap1.put("hive-column-type","string");
+        expectedMap1.put("rowkey","true");
+        expectedMap2.put("hive-column-name","value");
+        expectedMap2.put("hive-column-type","string");
+        expectedMap2.put("hbase-column-family","A");
+        expectedMap2.put("hbase-column-qualifier","anti-fraud");
         expectedArrayList.add(expectedMap1);
         expectedArrayList.add(expectedMap2);
 
-        ArrayList<Map<String,String>> actualArrayList = XmlUtil.extractHiveStruct(document);
+        ArrayList<HashMap<String,String>> actualArrayList = XmlUtil.extractMappingInfo(document);
         assertEquals(expectedArrayList,actualArrayList);
     }
 
@@ -58,8 +63,16 @@ public class XmlUtilTest {
         assertEquals("hdfs://nameservice1/user/hive/warehouse/fosunapp.db/fosun_fonova_active/data_date=20170425",XmlUtil.extractInputPath(document));
     }
 
-    @Test
+//    @Test
     public void testExtractHbaseColumnFamily(){
         assertEquals("A",XmlUtil.extractHbaseColumnFamily(document));
+    }
+
+//    @Test
+    public void testSaxParser(){
+        Document doc = DocumentHelper.createDocument();
+        doc.add(DocumentHelper.createElement("config"));
+        if(doc.getRootElement().element("aa")==null)
+            System.out.println(true);
     }
 }

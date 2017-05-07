@@ -1,22 +1,27 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <config>
-    <hive-struct>
-        <column>
-            <column-name>imei</column-name>
-            <column-type>string</column-type>
-        </column>
-        <column>
-            <column-name>value</column-name>
-            <column-type>string</column-type>
-        </column>
-    </hive-struct>
+    <input-path></input-path>
+    <output-path></output-path>
     <htable-name>fosun_tag_bak</htable-name>
-    <htable-columnfamily>A</htable-columnfamily>
-    <date>20170425</date>
-    <input-path>hdfs://nameservice1/user/hive/warehouse/fosunapp.db/fosun_fonova_active/data_date=20170425</input-path>
-    <output-path>hdfs://nameservice1/tmp/DoNotDelete/hfile/data_date=20170425</output-path>
+    <data-date>20170425</data-date>
+    <fields-demiliter></fields-demiliter>
+    <collection-item-delimiter></collection-item-delimiter>
+    <mapkey-delimiter></mapkey-delimiter>
     <hbase.zookeeper.quorum>192.168.254.71,192.168.254.72,192.168.254.73</hbase.zookeeper.quorum>
     <hbase.zookeeper.property.clientPort>2181</hbase.zookeeper.property.clientPort>
     <hbase.zookeeper.property.maxClientCnxns>400</hbase.zookeeper.property.maxClientCnxns>
     <hbase.znode.parent>/hbase</hbase.znode.parent>
+    <mapping-info>
+        <column-mapping>
+            <hive-column-name>imei</hive-column-name>
+            <hive-column-type>string</hive-column-type>
+            <rowkey>true</rowkey>
+        </column-mapping>
+        <column-mapping>
+            <hive-column-name>value</hive-column-name>
+            <hive-column-type>string</hive-column-type>
+            <hbase-column-family>A</hbase-column-family>
+            <hbase-column-qualifier>anti-fraud</hbase-column-qualifier>
+        </column-mapping>
+    </mapping-info>
 </config>
