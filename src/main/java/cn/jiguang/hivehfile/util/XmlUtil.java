@@ -93,7 +93,7 @@ public class XmlUtil {
      * @return
      */
     public static String extractDate(Document document) {
-        return document.getRootElement().elementText("date");
+        return document.getRootElement().elementText("data-date");
     }
 
     /**
@@ -174,9 +174,8 @@ public class XmlUtil {
      */
     public static HashMap<String, String> extractDelimiterCollection(Document document) {
         HashMap<String, String> result = new HashMap<String, String>();
-        result.put("field-delimiter", document.getRootElement().elementText("filed-delimiter"));
+        result.put("field-delimiter", String.valueOf((char)Integer.parseInt(document.getRootElement().elementText("field-delimiter").substring(2))));
         result.put("collection-item-delimiter", document.getRootElement().elementText("collection-item-delimiter"));
-        result.put("mapkey-delimiter", document.getRootElement().elementText("mapkey-delimiter"));
         return result;
     }
 

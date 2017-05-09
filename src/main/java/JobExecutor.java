@@ -15,10 +15,7 @@ public class JobExecutor {
     public static void main(String[] args){
         Configuration conf = new Configuration();
         try{
-//            ToolRunner.run(conf, new FonovaMapReduce(),args);
-//            ToolRunner.run(conf, new FraudFeatureNorMapReduce(),args);
-//            ToolRunner.run(conf,new FonovaActiveMapReduce(),args);
-            ToolRunner.run(conf,new GenericMapReduce(),args);
+           ToolRunner.run(conf,new GenericMapReduce(),args);
         }catch (Exception e){
             logger.error(e.getMessage());
         }

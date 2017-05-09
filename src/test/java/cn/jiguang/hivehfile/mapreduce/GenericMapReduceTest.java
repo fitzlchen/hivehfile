@@ -24,6 +24,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -32,7 +33,7 @@ import java.util.regex.Pattern;
  * Created by fitz on 2017/5/7.
  */
 public class GenericMapReduceTest {
-    MapDriver<LongWritable, Text, ImmutableBytesWritable, KeyValue> mapDriver;
+    MapDriver<LongWritable, Text, ImmutableBytesWritable, Text> mapDriver;
 
     @Before
     public void setup() {
@@ -40,7 +41,7 @@ public class GenericMapReduceTest {
     }
 
 
-//        @Test
+    //        @Test
     public void testReadSomeConfigFromHdfs() {
         HashMap<String, String> expected = new HashMap<String, String>();
         expected.put("input-path", "hdfs://nameservice1/tmp/test-hfile-input");
@@ -63,50 +64,36 @@ public class GenericMapReduceTest {
         assertEquals(expected, actual);
     }
 
-//    @Test
-    public void testGenericMapReduce() throws ParseException {
-        mapDriver.withInput(new LongWritable(0),new Text("0000\u0001lion"))
-                .withOutput(new ImmutableBytesWritable(Bytes.toBytes("0000"))
-                        ,new KeyValue(Bytes.toBytes("0000"),
-                                Bytes.toBytes("A"),
-                                Bytes.toBytes("anti-fraud"),
-                                DateUtil.convertDateToUnixTime("20170425"),
-                                Bytes.toBytes("lion"))
-                );
+    @Test
+    public void testGenericMapReduce() throws ParseException, IOException {
+        HashMap<String, String> expected = new HashMap<String, String>();
+        expected.put("rowKey", "0000");
+        expected.put("columnFamily", "A");
+        expected.put("column", "total_app_cnt");
+        expected.put("ts", "1493049600000");
+        expected.put("value", "lion");
+        mapDriver.withInput(new LongWritable(0), new Text("0000\u0001lion"))
+                .withOutput(new ImmutableBytesWritable(Bytes.toBytes("0000")), new Text(expected.toString()))
+                .runTest();
     }
 
-    @Test
+    //    @Test
     public void testUriParser() throws URISyntaxException {
         URI uri = new URI("hdfs://nameservice1/tmp/test-hfile-config/hiveConfig.txt");
         System.out.println(new Path(uri.getPath()).getName().toString());
     }
 }
 
-class GenericMapper extends Mapper<LongWritable, Text, ImmutableBytesWritable, KeyValue> {
-    private SAXReader saxReader = null;
-    private Document document = null;
-    private cn.jiguang.hivehfile.Configuration selfDefinedConfig = new cn.jiguang.hivehfile.Configuration();
+class GenericMapper extends Mapper<LongWritable, Text, ImmutableBytesWritable, Text> {
+    private cn.jiguang.hivehfile.Configuration selfDefinedConfig = null;
 
-    // 读取用户配置文件，进行参数装配
     @Override
     public void setup(Context context) throws IOException {
-               // 解析 XML 文件并进行装配
-                saxReader = new SAXReader();
-                try {
-                    document = saxReader.read("mr-config.xml");
-                } catch (DocumentException e) {
-                    System.exit(-1); // 解析配置文件失败，直接退出程序
-                }
-                selfDefinedConfig.setDelimiterCollection(XmlUtil.extractDelimiterCollection(document));
-                selfDefinedConfig.setRowkey(XmlUtil.extractRowKeyColumnName(document));
-                selfDefinedConfig.setRowkeyIndex(XmlUtil.extractRowkeyIndex(document));
-                selfDefinedConfig.setMappingInfo(XmlUtil.extractMappingInfo(document));
-                selfDefinedConfig.setHtableName(XmlUtil.extractHtableName(document));
-                selfDefinedConfig.setDataDate(XmlUtil.extractDate(document));
-           }
+        selfDefinedConfig = XmlUtil.generateConfigurationFromXml(context.getConfiguration(), "mr-config.xml");
+    }
 
     @Override
-    public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
+    public void map(LongWritable key, Text value, Mapper.Context context) throws IOException, InterruptedException {
         String inputString = value.toString();
         String[] values = inputString.split(selfDefinedConfig.getDelimiterCollection().get("field-delimiter"));
         ArrayList<HashMap<String, String>> mappingInfo = selfDefinedConfig.getMappingInfo();
@@ -127,18 +114,16 @@ class GenericMapper extends Mapper<LongWritable, Text, ImmutableBytesWritable, K
              * Value
              */
         for (int i = 0; i < values.length; i++) {
-            KeyValue kv = null;
-            String columnValue = null;
+            HashMap<String, String> kv = null;
             if (i != selfDefinedConfig.getRowkeyIndex()) {
-                kv = new KeyValue(Bytes.toBytes(values[selfDefinedConfig.getRowkeyIndex()]),
-                        Bytes.toBytes(mappingInfo.get(i).get("hbase-column-family")),
-                        Bytes.toBytes(mappingInfo.get(i).get("hbase-column-qualifier")),
-                        ts,
-                        Bytes.toBytes(PrintUtil.escapeConnotation(values[i]))
-                );
+                kv = new HashMap<String, String>();
+                kv.put("rowKey", values[selfDefinedConfig.getRowkeyIndex()]);
+                kv.put("columnFamily", mappingInfo.get(i).get("hbase-column-family"));
+                kv.put("column", mappingInfo.get(i).get("hbase-column-qualifier"));
+                kv.put("ts", String.valueOf(ts));
+                kv.put("value", PrintUtil.escapeConnotation(values[i]));
             }
-            if (kv != null) context.write(rowkey, kv);
-            i++;
+            if (kv != null) context.write(rowkey, new Text(kv.toString()));
         }
     }
 }

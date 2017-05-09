@@ -9,6 +9,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -54,8 +55,9 @@ public class XmlUtilTest {
     }
 
 //    @Test
-    public void testExtractDate(){
-        assertEquals("20170425",XmlUtil.extractDate(document));
+    public void testExtractDate() throws ParseException {
+        Long expected = 1493049600000L;
+        assertEquals(expected,DateUtil.convertDateToUnixTime(XmlUtil.extractDate(document)));
     }
 
 //    @Test
@@ -76,13 +78,29 @@ public class XmlUtilTest {
             System.out.println(true);
     }
 
-    @Test
+//    @Test
     public void testExtractHbaseQuorem(){
         assertEquals("192.168.254.71,192.168.254.72,192.168.254.73",XmlUtil.extractHbaseQuorum(document));
     }
 
-//    @Test
+    @Test
     public void testExtractRowkeyIndex(){
-        assertEquals(1,XmlUtil.extractRowkeyIndex(document));
+        assertEquals(0,XmlUtil.extractRowkeyIndex(document));
+    }
+
+//    @Test
+    public void testExtractDelimiterCollection(){
+        HashMap<String,String> expected = new HashMap<String, String>();
+        expected.put("field-delimiter","\u0001");
+        expected.put("collection-item-delimiter",",");
+        HashMap<String,String> actual = XmlUtil.extractDelimiterCollection(document);
+        assertEquals("\u0001",actual.get("field-delimiter"));
+    }
+
+//    @Test
+    public void testExtractMappingInfo(){
+        HashMap<String,String> expected = new HashMap<String, String>();
+
+        assertEquals(expected,XmlUtil.extractMappingInfo(document));
     }
 }

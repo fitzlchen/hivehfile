@@ -4,7 +4,6 @@ import cn.jiguang.hivehfile.util.DateUtil;
 import cn.jiguang.hivehfile.util.PrintUtil;
 import cn.jiguang.hivehfile.util.XmlUtil;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.KeyValue;
@@ -81,7 +80,6 @@ public class GenericMapReduce implements Tool {
                     );
                 }
                 if (kv != null) context.write(rowkey, kv);
-                i++;
             }
         }
     }
