@@ -24,10 +24,21 @@ public class DateUtil {
         Matcher matcher = Pattern.compile(regex).matcher(inputString);
         String mStr = null;
         if(matcher.find()) {
-            System.out.println(matcher.group(1));
             mStr = matcher.group(1);
         }
         Long ts = dateFormattor.parse(mStr).getTime();  // data_date=yyyyMMdd
+        return ts;
+    }
+
+    /**
+     * 将yyyyMMdd格式的字符串转换为UnixTime
+     * @param date
+     * @return
+     * @throws ParseException
+     */
+    public static Long convertDateToUnixTime(String date) throws ParseException {
+        SimpleDateFormat dateFormattor = new SimpleDateFormat("yyyyMMdd");
+        Long ts = dateFormattor.parse(date).getTime();  // data_date=yyyyMMdd
         return ts;
     }
 }

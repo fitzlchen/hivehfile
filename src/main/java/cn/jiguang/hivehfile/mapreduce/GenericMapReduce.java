@@ -1,8 +1,9 @@
 package cn.jiguang.hivehfile.mapreduce;
 
+import cn.jiguang.hivehfile.util.DateUtil;
+import cn.jiguang.hivehfile.util.PrintUtil;
 import cn.jiguang.hivehfile.util.XmlUtil;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hbase.HBaseConfiguration;
@@ -25,17 +26,11 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
-import org.dom4j.Document;
-import org.dom4j.DocumentException;
-import org.dom4j.io.SAXReader;
 
 import java.io.IOException;
-import java.net.URI;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Created by jiguang
@@ -44,113 +39,75 @@ import java.util.regex.Pattern;
 public class GenericMapReduce implements Tool {
     static Logger logger = LogManager.getLogger(GenericMapReduce.class);
     static Configuration configuration = new Configuration();
-    private static String configPath = null;
+    private String configFilePath = null;
 
     public static class GenericMapper extends Mapper<LongWritable, Text, ImmutableBytesWritable, KeyValue> {
-        private SAXReader saxReader = null;
-        private Document document = null;
-        private cn.jiguang.hivehfile.Configuration selfDefinedConfig = new cn.jiguang.hivehfile.Configuration();
-
-        // 读取用户配置文件，进行参数装配
+        private cn.jiguang.hivehfile.Configuration selfDefinedConfig = null;
         @Override
         public void setup(Context context) throws IOException {
-            String configFileName = new Path(configPath).getName();
-            URI[] uris = Job.getInstance(configuration).getCacheFiles();
-            for (URI $u : uris) {
-                if (configFileName.equals($u)) {
-                    // 解析 XML 文件并进行装配
-                    saxReader = new SAXReader();
-                    try {
-                        document = saxReader.read($u.toURL());
-                    } catch (DocumentException e) {
-                        logger.fatal("解析配置文件时发生错误，请检查文件填写内容！\n" + e.getMessage());
-                        System.exit(-1); // 解析配置文件失败，直接退出程序
-                    }
-                    selfDefinedConfig.setDelimiterCollection(XmlUtil.extractDelimiterCollection(document));
-                    selfDefinedConfig.setRowkey(XmlUtil.extractRowKeyColumnName(document));
-                    selfDefinedConfig.setMappingInfo(XmlUtil.extractMappingInfo(document));
-                    selfDefinedConfig.setHtableName(XmlUtil.extractHtableName(document));
-                    selfDefinedConfig.setDataDate(XmlUtil.extractDate(document));
-                    selfDefinedConfig.setHbaseZookeeperQuorum(XmlUtil.extractHbaseQuorum(document));
-                    selfDefinedConfig.setHbaseZnodeParent(XmlUtil.extractHbaseParent(document));
-                    selfDefinedConfig.setHbaseZookeeperPropertyClientPort(XmlUtil.extractHbaseClientPort(document));
-                    selfDefinedConfig.setHbaseZookeeperPropertyMaxClientCnxn(XmlUtil.extractHbaseMaxClientCnxns(document));
-                    configuration.set("hbase.zookeeper.quorum", selfDefinedConfig.getHbaseZookeeperQuorum());
-                    configuration.set("hbase.zookeeper.property.clientPort", selfDefinedConfig.getHbaseZookeeperPropertyClientPort());
-                    configuration.set("hbase.zookeeper.property.maxClientCnxns", selfDefinedConfig.getHbaseZookeeperPropertyMaxClientCnxn());
-                    configuration.set("zookeeper.znode.parent", selfDefinedConfig.getHbaseZnodeParent());
-                    logger.info("Successfully read distributedcache file:");
-                    break;
-                }
-            }
-
-
+            selfDefinedConfig = XmlUtil.generateConfigurationFromXml(context.getConfiguration(),context.getConfiguration().get("config.file.path"));
         }
 
         @Override
-        public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
+        public void map(LongWritable key, Text value, Mapper.Context context) throws IOException, InterruptedException {
             String inputString = value.toString();
             String[] values = inputString.split(selfDefinedConfig.getDelimiterCollection().get("field-delimiter"));
             ArrayList<HashMap<String, String>> mappingInfo = selfDefinedConfig.getMappingInfo();
-            ImmutableBytesWritable rowKey = null;
-            KeyValue kv = null;
-            // 读取数据文件，填充到对应的Hive字段
+            // 在每一行数据中，rowkey 和 timestamp 都固定不变
+            ImmutableBytesWritable rowkey = new ImmutableBytesWritable(Bytes.toBytes(values[selfDefinedConfig.getRowkeyIndex()]));
+            Long ts = 0L;
+            try {
+                ts = DateUtil.convertDateToUnixTime(selfDefinedConfig.getDataDate());
+            } catch (ParseException e) {
+                logger.error(e.getMessage());
+                System.exit(-1);    // 无法解析强制退出
+            }
+            /* 开始装配HFile
+             * 所需参数：
+             * RowKey
+             * ColumnFamily
+             * ColumnQualifier
+             * TimeStamp
+             * Value
+             */
             for (int i = 0; i < values.length; i++) {
-                if (!mappingInfo.get(i).get("hive-column-name").equals(selfDefinedConfig.getRowkey())) {
-                /* 开始装配HFile
-                 * RowKey 固定为 imei
-                 * ColumnFamily 固定为 A
-                 * ColumnQualifier 固定为 columnName
-                 * TimeStamp 固定为 数据日期，即data_date
-                 * Value 固定为 columnValue
-                 */
-
-
-
-                }else{
-                    if(rowKey == null){
-                        rowKey = new ImmutableBytesWritable(Bytes.toBytes(values[i]));
-                    }
+                KeyValue kv = null;
+                if (i != selfDefinedConfig.getRowkeyIndex()) {
+                    kv = new KeyValue(Bytes.toBytes(values[selfDefinedConfig.getRowkeyIndex()]),
+                            Bytes.toBytes(mappingInfo.get(i).get("hbase-column-family")),
+                            Bytes.toBytes(mappingInfo.get(i).get("hbase-column-qualifier")),
+                            ts,
+                            Bytes.toBytes(PrintUtil.escapeConnotation(values[i]))
+                    );
                 }
-                if( kv != null)context.write(rowKey,kv);
+                if (kv != null) context.write(rowkey, kv);
                 i++;
             }
         }
     }
+
     /**
      * 运行通用MR的入口
      *
-     * @param args args[0]  :   配置文件的HDFS路径
-     *             args[1]  :   InputPath
-     *             args[2]  :   OutputPath
+     * @param args :  配置文件的HDFS绝对路径
      * @return
      * @throws Exception
      */
     public int run(String[] args) throws Exception {
-        configPath = args[0];
-        FileSystem fileSystem = FileSystem.get(configuration);
-        if (!fileSystem.exists(new Path(configPath))) {
-            logger.fatal("HDFS中不存在目标文件！请检查路径：" + configPath);
-            System.exit(-1);    // 直接异常退出
-        }
-        HashMap<String, String> someConfigs = readSomeConfigFromHdfs(fileSystem, new Path(configPath));
-        String inputPath = null, outputPath = null, htableName = null;
-        if (someConfigs != null
-                && someConfigs.containsKey("input-path")
-                && someConfigs.containsKey("output-key")
-                && someConfigs.containsKey("htable-name")) {
-            inputPath = someConfigs.get("input-key");
-            outputPath = someConfigs.get("output-key");
-            htableName = someConfigs.get("htable-name");
-
-        } else {
-            logger.fatal("无法获取配置文件中的输入路径或输出路径或HBase表名！");
-            System.exit(-1);
-        }
-        Job job = new Job(configuration);
+        configFilePath = args[0];
+        cn.jiguang.hivehfile.Configuration selfDefinedConfig = XmlUtil.generateConfigurationFromXml(configuration,configFilePath);
+        String inputPath = selfDefinedConfig.getInputPath(),
+                outputPath = selfDefinedConfig.getOutputPath(),
+                htableName = selfDefinedConfig.getHtableName();
+        configuration.set("hbase.zookeeper.quorum", selfDefinedConfig.getHbaseZookeeperQuorum());
+        configuration.set("hbase.zookeeper.property.clientPort", selfDefinedConfig.getHbaseZookeeperPropertyClientPort());
+        configuration.set("hbase.zookeeper.property.maxClientCnxns", selfDefinedConfig.getHbaseZookeeperPropertyMaxClientCnxns());
+        configuration.set("zookeeper.znode.parent", selfDefinedConfig.getHbaseZnodeParent());
+        configuration.set("config.file.path",configFilePath);
+        Job job = Job.getInstance(configuration);
         job.addCacheFile(new Path(args[0]).toUri());
-        job.setJarByClass(FonovaMapReduce.class);
-        job.setMapperClass(FonovaMapReduce.HFileMapper.class);
+        job.setJarByClass(GenericMapReduce.class);
+        job.setMapperClass(GenericMapReduce.GenericMapper.class);
         job.setMapOutputKeyClass(ImmutableBytesWritable.class);
         job.setMapOutputValueClass(KeyValue.class);
         job.setInputFormatClass(TextInputFormat.class);
@@ -179,35 +136,5 @@ public class GenericMapReduce implements Tool {
 
     public Configuration getConf() {
         return configuration;
-    }
-
-
-    /**
-     * 从HDFS读取配置文件，并获取其中的input-path和output-path和htable-name路径
-     *
-     * @param fs
-     * @param path
-     * @return
-     * @throws IOException
-     */
-    private HashMap<String, String> readSomeConfigFromHdfs(FileSystem fs, Path path) throws IOException {
-        FSDataInputStream in = fs.open(path);
-        byte[] block = new byte[1024];
-        int length = 0;
-        StringBuffer sb = new StringBuffer();
-        while ((length = in.read(block)) > 0) {
-            sb.append(new String(block, "UTF-8"));
-        }
-        HashMap<String, String> result = new HashMap<String, String>();
-        Matcher inputPathMatcher = Pattern.compile("<input-path>(.+)</input-path>").matcher(sb.toString());
-        if (inputPathMatcher.find())
-            result.put("input-path", inputPathMatcher.group(1));
-        Matcher outputPathMatcher = Pattern.compile("<output-path>(.+)</output-path>").matcher(sb.toString());
-        if (outputPathMatcher.find())
-            result.put("output-path", outputPathMatcher.group(1));
-        Matcher htableNameMatcher = Pattern.compile("<htable-name>(.+)</htable-name>").matcher(sb.toString());
-        if (htableNameMatcher.find())
-            result.put("htable-name", htableNameMatcher.group(1));
-        return result;
     }
 }

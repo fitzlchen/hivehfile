@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <config>
-    <input-path></input-path>
-    <output-path></output-path>
-    <htable-name>fosun_tag_bak</htable-name>
+    <input-path>hdfs://nameservice1/tmp/test-hfile-input</input-path>
+    <output-path>hdfs://nameservice1/tmp/test-hfile-output</output-path>
+    <htable-name>fraud_feature_nor</htable-name>
     <data-date>20170425</data-date>
-    <fields-demiliter></fields-demiliter>
-    <collection-item-delimiter></collection-item-delimiter>
-    <mapkey-delimiter></mapkey-delimiter>
+    <field-delimiter>\u0001</field-delimiter>
+    <collection-item-delimiter>,</collection-item-delimiter>
     <hbase.zookeeper.quorum>192.168.254.71,192.168.254.72,192.168.254.73</hbase.zookeeper.quorum>
     <hbase.zookeeper.property.clientPort>2181</hbase.zookeeper.property.clientPort>
     <hbase.zookeeper.property.maxClientCnxns>400</hbase.zookeeper.property.maxClientCnxns>
@@ -21,7 +20,7 @@
             <hive-column-name>value</hive-column-name>
             <hive-column-type>string</hive-column-type>
             <hbase-column-family>A</hbase-column-family>
-            <hbase-column-qualifier>anti-fraud</hbase-column-qualifier>
+            <hbase-column-qualifier>total_app_cnt</hbase-column-qualifier>
         </column-mapping>
     </mapping-info>
 </config>

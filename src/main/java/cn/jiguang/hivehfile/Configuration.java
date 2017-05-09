@@ -10,15 +10,61 @@ import java.util.HashMap;
  */
 public class Configuration {
     private String
-            htableName, dataDate,hbaseZookeeperQuorum,
+            htableName,
+            dataDate,
+            inputPath,
+            outputPath,
+            rowkey,
+            hbaseZookeeperQuorum,
             hbaseZookeeperPropertyClientPort,
-            hbaseZookeeperPropertyMaxClientCnxn, hbaseZnodeParent,
-            inputPath,outputPath,
-            rowkey;
+            hbaseZookeeperPropertyMaxClientCnxns,
+            hbaseZnodeParent;
 
     private ArrayList<HashMap<String,String>> mappingInfo;
 
     private HashMap<String,String> delimiterCollection;
+
+    private int rowkeyIndex;
+
+    public String getHbaseZookeeperQuorum() {
+        return hbaseZookeeperQuorum;
+    }
+
+    public void setHbaseZookeeperQuorum(String hbaseZookeeperQuorum) {
+        this.hbaseZookeeperQuorum = hbaseZookeeperQuorum;
+    }
+
+    public String getHbaseZookeeperPropertyClientPort() {
+        return hbaseZookeeperPropertyClientPort;
+    }
+
+    public void setHbaseZookeeperPropertyClientPort(String hbaseZookeeperPropertyClientPort) {
+        this.hbaseZookeeperPropertyClientPort = hbaseZookeeperPropertyClientPort;
+    }
+
+    public String getHbaseZookeeperPropertyMaxClientCnxns() {
+        return hbaseZookeeperPropertyMaxClientCnxns;
+    }
+
+    public void setHbaseZookeeperPropertyMaxClientCnxns(String hbaseZookeeperPropertyMaxClientCnxns) {
+        this.hbaseZookeeperPropertyMaxClientCnxns = hbaseZookeeperPropertyMaxClientCnxns;
+    }
+
+    public String getHbaseZnodeParent() {
+        return hbaseZnodeParent;
+    }
+
+    public void setHbaseZnodeParent(String hbaseZnodeParent) {
+        this.hbaseZnodeParent = hbaseZnodeParent;
+    }
+
+    public int getRowkeyIndex() {
+        return rowkeyIndex;
+    }
+
+    public void setRowkeyIndex(int rowkeyIndex) {
+        this.rowkeyIndex = rowkeyIndex;
+    }
 
     public HashMap<String, String> getDelimiterCollection() {
         return delimiterCollection;
@@ -74,38 +120,6 @@ public class Configuration {
 
     public void setHtableName(String htableName) {
         this.htableName = htableName;
-    }
-
-    public String getHbaseZookeeperQuorum() {
-        return hbaseZookeeperQuorum;
-    }
-
-    public void setHbaseZookeeperQuorum(String hbaseZookeeperQuorum) {
-        this.hbaseZookeeperQuorum = hbaseZookeeperQuorum;
-    }
-
-    public String getHbaseZookeeperPropertyClientPort() {
-        return hbaseZookeeperPropertyClientPort;
-    }
-
-    public void setHbaseZookeeperPropertyClientPort(String hbaseZookeeperPropertyClientPort) {
-        this.hbaseZookeeperPropertyClientPort = hbaseZookeeperPropertyClientPort;
-    }
-
-    public String getHbaseZookeeperPropertyMaxClientCnxn() {
-        return hbaseZookeeperPropertyMaxClientCnxn;
-    }
-
-    public void setHbaseZookeeperPropertyMaxClientCnxn(String hbaseZookeeperPropertyMaxClientCnxn) {
-        this.hbaseZookeeperPropertyMaxClientCnxn = hbaseZookeeperPropertyMaxClientCnxn;
-    }
-
-    public String getHbaseZnodeParent() {
-        return hbaseZnodeParent;
-    }
-
-    public void setHbaseZnodeParent(String hbaseZnodeParent) {
-        this.hbaseZnodeParent = hbaseZnodeParent;
     }
 }
 

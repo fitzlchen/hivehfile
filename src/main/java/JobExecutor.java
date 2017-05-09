@@ -1,8 +1,5 @@
-import cn.jiguang.hivehfile.mapreduce.FonovaActiveMapReduce;
-import cn.jiguang.hivehfile.mapreduce.FonovaMapReduce;
-import cn.jiguang.hivehfile.mapreduce.FraudFeatureNorMapReduce;
+import cn.jiguang.hivehfile.mapreduce.GenericMapReduce;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
@@ -19,8 +16,9 @@ public class JobExecutor {
         Configuration conf = new Configuration();
         try{
 //            ToolRunner.run(conf, new FonovaMapReduce(),args);
-            ToolRunner.run(conf, new FraudFeatureNorMapReduce(),args);
+//            ToolRunner.run(conf, new FraudFeatureNorMapReduce(),args);
 //            ToolRunner.run(conf,new FonovaActiveMapReduce(),args);
+            ToolRunner.run(conf,new GenericMapReduce(),args);
         }catch (Exception e){
             logger.error(e.getMessage());
         }

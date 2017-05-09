@@ -28,7 +28,7 @@ public class XmlUtilTest {
         document = reader.read(config);
     }
 
-    @Test
+//    @Test
     public void testExractHiveStruct(){
         ArrayList<HashMap<String,String>>  expectedArrayList = new ArrayList<HashMap<String, String>>();
         HashMap<String,String>
@@ -74,5 +74,15 @@ public class XmlUtilTest {
         doc.add(DocumentHelper.createElement("config"));
         if(doc.getRootElement().element("aa")==null)
             System.out.println(true);
+    }
+
+    @Test
+    public void testExtractHbaseQuorem(){
+        assertEquals("192.168.254.71,192.168.254.72,192.168.254.73",XmlUtil.extractHbaseQuorum(document));
+    }
+
+//    @Test
+    public void testExtractRowkeyIndex(){
+        assertEquals(1,XmlUtil.extractRowkeyIndex(document));
     }
 }
