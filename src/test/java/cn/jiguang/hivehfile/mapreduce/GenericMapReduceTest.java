@@ -1,5 +1,6 @@
 package cn.jiguang.hivehfile.mapreduce;
 
+import cn.jiguang.hivehfile.model.MappingInfo;
 import cn.jiguang.hivehfile.util.DateUtil;
 import cn.jiguang.hivehfile.util.PrintUtil;
 import cn.jiguang.hivehfile.util.XmlUtil;
@@ -10,6 +11,7 @@ import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 import org.apache.hadoop.mrunit.mapreduce.MapDriver;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
@@ -95,15 +97,19 @@ class GenericMapper extends Mapper<LongWritable, Text, ImmutableBytesWritable, T
     @Override
     public void map(LongWritable key, Text value, Mapper.Context context) throws IOException, InterruptedException {
         String inputString = value.toString();
+        // 获取数据文件的路径
+        String dataFilePath = "hdfs://nameservice1/tmp/test-hfile-input/feature=install_pkg_cnt/data_date=2017042500";
         String[] values = inputString.split(selfDefinedConfig.getDelimiterCollection().get("field-delimiter"));
-        ArrayList<HashMap<String, String>> mappingInfo = selfDefinedConfig.getMappingInfo();
+        // 获取当前 MappingInfo
+        MappingInfo currentMappingInfo = XmlUtil.extractCurrentMappingInfo(dataFilePath ,selfDefinedConfig.getMappingInfoList());
         // 在每一行数据中，rowkey 和 timestamp 都固定不变
-        ImmutableBytesWritable rowkey = new ImmutableBytesWritable(Bytes.toBytes(values[selfDefinedConfig.getRowkeyIndex()]));
+        ImmutableBytesWritable rowkey = new ImmutableBytesWritable(Bytes.toBytes(values[XmlUtil.extractRowkeyIndex(currentMappingInfo)]));
         Long ts = 0L;
+        // 解析数据文件路径，获取数据日期 data_date
         try {
-            ts = DateUtil.convertDateToUnixTime(selfDefinedConfig.getDataDate());
+            ts = DateUtil.convertStringToUnixTime(dataFilePath,"yyyyMMdd","data_date=(\\d{8})");
         } catch (ParseException e) {
-            System.exit(-1);    // 无法解析强制退出
+            System.exit(-1);    // 异常直接退出
         }
             /* 开始装配HFile
              * 所需参数：
@@ -114,14 +120,18 @@ class GenericMapper extends Mapper<LongWritable, Text, ImmutableBytesWritable, T
              * Value
              */
         for (int i = 0; i < values.length; i++) {
-            HashMap<String, String> kv = null;
-            if (i != selfDefinedConfig.getRowkeyIndex()) {
+            HashMap<String,String> kv = null;
+            if (i != XmlUtil.extractRowkeyIndex(currentMappingInfo)
+                    && currentMappingInfo.getColumnMappingList().get(i).get("hbase-column-family") != null
+                    && currentMappingInfo.getColumnMappingList().get(i).get("hbase-column-qualifier") != null
+                    ) {  // 只遍历非 Rowkey 且 需要写入 HBase 的字段
                 kv = new HashMap<String, String>();
-                kv.put("rowKey", values[selfDefinedConfig.getRowkeyIndex()]);
-                kv.put("columnFamily", mappingInfo.get(i).get("hbase-column-family"));
-                kv.put("column", mappingInfo.get(i).get("hbase-column-qualifier"));
-                kv.put("ts", String.valueOf(ts));
-                kv.put("value", PrintUtil.escapeConnotation(values[i]));
+                kv.put("rowKey",values[XmlUtil.extractRowkeyIndex(currentMappingInfo)]);
+                kv.put("columnFamily",currentMappingInfo.getColumnMappingList().get(i).get("hbase-column-family"));
+                kv.put("column",currentMappingInfo.getColumnMappingList().get(i).get("hbase-column-qualifier"));
+                kv.put("ts",String.valueOf(ts));
+                kv.put("value",PrintUtil.escapeConnotation(values[i]));
+                System.out.println(kv);
             }
             if (kv != null) context.write(rowkey, new Text(kv.toString()));
         }

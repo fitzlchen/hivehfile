@@ -1,5 +1,6 @@
 package cn.jiguang.hivehfile.mapreduce;
 
+import cn.jiguang.hivehfile.model.MappingInfo;
 import cn.jiguang.hivehfile.util.DateUtil;
 import cn.jiguang.hivehfile.util.PrintUtil;
 import cn.jiguang.hivehfile.util.XmlUtil;
@@ -20,6 +21,7 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.util.Tool;
@@ -44,22 +46,27 @@ public class GenericMapReduce implements Tool {
         private cn.jiguang.hivehfile.Configuration selfDefinedConfig = null;
         @Override
         public void setup(Context context) throws IOException {
+            // 读取HDFS配置文件，并将其封装成对象
             selfDefinedConfig = XmlUtil.generateConfigurationFromXml(context.getConfiguration(),context.getConfiguration().get("config.file.path"));
         }
 
         @Override
         public void map(LongWritable key, Text value, Mapper.Context context) throws IOException, InterruptedException {
             String inputString = value.toString();
+            // 获取数据文件的路径
+            String dataFilePath = ((FileSplit)context.getInputSplit()).getPath().toString();
             String[] values = inputString.split(selfDefinedConfig.getDelimiterCollection().get("field-delimiter"));
-            ArrayList<HashMap<String, String>> mappingInfo = selfDefinedConfig.getMappingInfo();
+            // 获取当前 MappingInfo
+            MappingInfo currentMappingInfo = XmlUtil.extractCurrentMappingInfo(dataFilePath ,selfDefinedConfig.getMappingInfoList());
             // 在每一行数据中，rowkey 和 timestamp 都固定不变
-            ImmutableBytesWritable rowkey = new ImmutableBytesWritable(Bytes.toBytes(values[selfDefinedConfig.getRowkeyIndex()]));
+            ImmutableBytesWritable rowkey = new ImmutableBytesWritable(Bytes.toBytes(values[XmlUtil.extractRowkeyIndex(currentMappingInfo)]));
             Long ts = 0L;
+            // 解析数据文件路径，获取数据日期 data_date
             try {
-                ts = DateUtil.convertDateToUnixTime(selfDefinedConfig.getDataDate());
+                ts = DateUtil.convertStringToUnixTime(dataFilePath,"yyyyMMdd","data_date=(\\d{8})");
             } catch (ParseException e) {
-                logger.error(e.getMessage());
-                System.exit(-1);    // 无法解析强制退出
+                logger.fatal("无法解析数据日期，请检查InputPath和Partition的填写！");
+                System.exit(-1);    // 异常直接退出
             }
             /* 开始装配HFile
              * 所需参数：
@@ -71,10 +78,13 @@ public class GenericMapReduce implements Tool {
              */
             for (int i = 0; i < values.length; i++) {
                 KeyValue kv = null;
-                if (i != selfDefinedConfig.getRowkeyIndex()) {
-                    kv = new KeyValue(Bytes.toBytes(values[selfDefinedConfig.getRowkeyIndex()]),
-                            Bytes.toBytes(mappingInfo.get(i).get("hbase-column-family")),
-                            Bytes.toBytes(mappingInfo.get(i).get("hbase-column-qualifier")),
+                if (i != XmlUtil.extractRowkeyIndex(currentMappingInfo)
+                        && currentMappingInfo.getColumnMappingList().get(i).get("hbase-column-family") != null
+                        && currentMappingInfo.getColumnMappingList().get(i).get("hbase-column-qualifier") != null
+                        ) {  // 只遍历非 Rowkey 且 需要写入 HBase 的字段
+                    kv = new KeyValue(Bytes.toBytes(values[XmlUtil.extractRowkeyIndex(currentMappingInfo)]),
+                            Bytes.toBytes(currentMappingInfo.getColumnMappingList().get(i).get("hbase-column-family")),
+                            Bytes.toBytes(currentMappingInfo.getColumnMappingList().get(i).get("hbase-column-qualifier")),
                             ts,
                             Bytes.toBytes(PrintUtil.escapeConnotation(values[i]))
                     );
@@ -94,8 +104,9 @@ public class GenericMapReduce implements Tool {
     public int run(String[] args) throws Exception {
         configFilePath = args[0];
         cn.jiguang.hivehfile.Configuration selfDefinedConfig = XmlUtil.generateConfigurationFromXml(configuration,configFilePath);
-        String inputPath = selfDefinedConfig.getInputPath(),
-                outputPath = selfDefinedConfig.getOutputPath(),
+        // 将 InputPath 与所有 partition 拼接
+        String inputPath = selfDefinedConfig.getAllInputPath();
+        String outputPath = selfDefinedConfig.getOutputPath(),
                 htableName = selfDefinedConfig.getHtableName();
         configuration.set("hbase.zookeeper.quorum", selfDefinedConfig.getHbaseZookeeperQuorum());
         configuration.set("hbase.zookeeper.property.clientPort", selfDefinedConfig.getHbaseZookeeperPropertyClientPort());

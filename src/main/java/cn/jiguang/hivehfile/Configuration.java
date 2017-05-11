@@ -1,5 +1,7 @@
 package cn.jiguang.hivehfile;
 
+import cn.jiguang.hivehfile.model.MappingInfo;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -11,20 +13,35 @@ import java.util.HashMap;
 public class Configuration {
     private String
             htableName,
-            dataDate,
             inputPath,
             outputPath,
-            rowkey,
             hbaseZookeeperQuorum,
             hbaseZookeeperPropertyClientPort,
             hbaseZookeeperPropertyMaxClientCnxns,
             hbaseZnodeParent;
 
-    private ArrayList<HashMap<String,String>> mappingInfo;
+    private ArrayList<MappingInfo> mappingInfoList;
 
     private HashMap<String,String> delimiterCollection;
 
-    private int rowkeyIndex;
+    public String getAllInputPath(){
+        StringBuffer sb = new StringBuffer();
+        for(MappingInfo $m : mappingInfoList){
+            String[] subPath = $m.getPartition().replaceAll("\\s*","").split(",");
+            for(String $s : subPath){
+                sb.append(inputPath+"/"+$s+",");
+            }
+        }
+        return sb.toString().substring(0,sb.length()-1);
+    }
+
+    public ArrayList<MappingInfo> getMappingInfoList() {
+        return mappingInfoList;
+    }
+
+    public void setMappingInfoList(ArrayList<MappingInfo> mappingInfoList) {
+        this.mappingInfoList = mappingInfoList;
+    }
 
     public String getHbaseZookeeperQuorum() {
         return hbaseZookeeperQuorum;
@@ -58,28 +75,12 @@ public class Configuration {
         this.hbaseZnodeParent = hbaseZnodeParent;
     }
 
-    public int getRowkeyIndex() {
-        return rowkeyIndex;
-    }
-
-    public void setRowkeyIndex(int rowkeyIndex) {
-        this.rowkeyIndex = rowkeyIndex;
-    }
-
     public HashMap<String, String> getDelimiterCollection() {
         return delimiterCollection;
     }
 
     public void setDelimiterCollection(HashMap<String, String> delimiterCollection) {
         this.delimiterCollection = delimiterCollection;
-    }
-
-    public String getRowkey() {
-        return rowkey;
-    }
-
-    public void setRowkey(String rowkey) {
-        this.rowkey = rowkey;
     }
 
     public String getInputPath() {
@@ -96,22 +97,6 @@ public class Configuration {
 
     public void setOutputPath(String outputPath) {
         this.outputPath = outputPath;
-    }
-
-    public String getDataDate() {
-        return dataDate;
-    }
-
-    public void setDataDate(String dataDate) {
-        this.dataDate = dataDate;
-    }
-
-    public ArrayList<HashMap<String, String>> getMappingInfo() {
-        return mappingInfo;
-    }
-
-    public void setMappingInfo(ArrayList<HashMap<String, String>> mappingInfo) {
-        this.mappingInfo = mappingInfo;
     }
 
     public String getHtableName() {
