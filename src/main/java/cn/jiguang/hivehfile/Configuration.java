@@ -27,9 +27,13 @@ public class Configuration {
     public String getAllInputPath(){
         StringBuffer sb = new StringBuffer();
         for(MappingInfo $m : mappingInfoList){
-            String[] subPath = $m.getPartition().replaceAll("\\s*","").split(",");
-            for(String $s : subPath){
-                sb.append(inputPath+"/"+$s+",");
+            if($m.getPartition() != null && !"".equals($m.getPartition())){
+                String[] subPath = $m.getPartition().replaceAll("\\s*","").split(",");
+                for(String $s : subPath){
+                    sb.append(inputPath+"/"+$s+",");
+                }
+            }else{
+                sb.append(inputPath+",");
             }
         }
         return sb.toString().substring(0,sb.length()-1);

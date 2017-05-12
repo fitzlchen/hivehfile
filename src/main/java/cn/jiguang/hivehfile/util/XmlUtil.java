@@ -32,7 +32,10 @@ public class XmlUtil {
         List<Element> mappingInfoList = document.getRootElement().elements("mapping-info");
         for (Element $e : mappingInfoList) {
             MappingInfo mappingInfo = new MappingInfo();
-            mappingInfo.setPartition($e.elementText("partition").replaceAll("\\s",""));
+            // MappingInfo中可能不含有partition信息
+            if($e.element("partition")!=null){
+                mappingInfo.setPartition($e.elementText("partition").replaceAll("\\s",""));
+            }
             Iterator<Element> iterator = $e.elements("column-mapping").iterator();
             while (iterator.hasNext()) {
                 Element $$e = iterator.next();

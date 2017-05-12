@@ -70,12 +70,10 @@ public class XmlUtilTest {
       assertEquals("fraud_feature_nor",XmlUtil.extractHtableName(document));
     }
 
-//    @Test
+    @Test
     public void testGetAllInputpath(){
-        assertEquals("hdfs://nameservice1/tmp/test-hfile-input/feature=black_wifi_cnt/data_date=20170420," +
-                "hdfs://nameservice1/tmp/test-hfile-input/feature=black_wifi_cnt/data_date=20170421," +
-                "hdfs://nameservice1/tmp/test-hfile-input/feature=install_pkg_cnt/data_date=20170424," +
-                "hdfs://nameservice1/tmp/test-hfile-input/feature=install_pkg_cnt/data_date=20170425",configuration.getAllInputPath());
+        assertEquals("hdfs://nameservice1/user/hive/warehouse/tmp.db/api_feature_nor_v1,hdfs://nameservice1/user/hive/warehouse/tmp.db/api_feature_nor_v1/feature=rent_car_pkg_cnt/data_date=20170430,hdfs://nameservice1/user/hive/warehouse/tmp.db/api_feature_nor_v1/feature=loan_times/data_date=20170430,hdfs://nameservice1/user/hive/warehouse/tmp.db/api_feature_nor_v1/feature=price/data_date=20170430,hdfs://nameservice1/user/hive/warehouse/tmp.db/api_feature_nor_v1"
+                ,configuration.getAllInputPath());
     }
 
 //    @Test
@@ -83,7 +81,7 @@ public class XmlUtilTest {
         assertEquals("192.168.254.71,192.168.254.72,192.168.254.73",XmlUtil.extractHbaseQuorum(document));
     }
 
-    @Test
+//    @Test
     public void testExtractRowkeyIndex(){
         // 获取当前 MappingInfo
         MappingInfo currentMappingInfo = XmlUtil.extractCurrentMappingInfo("hdfs://nameservice1/tmp/test-hfile-input/feature=install_pkg_cnt/data_date=20170425" ,configuration.getMappingInfoList());

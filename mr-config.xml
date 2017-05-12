@@ -13,10 +13,7 @@
 
     <!-- Local Settings -->
     <mapping-info>
-        <partition>
-            feature=black_wifi_cnt/data_date=20170430
-        </partition>
-        <column-mapping>
+       <column-mapping>
             <hive-column-name>imei</hive-column-name>
             <hive-column-type>string</hive-column-type>
             <rowkey>true</rowkey>
@@ -26,40 +23,6 @@
             <hive-column-type>string</hive-column-type>
             <hbase-column-family>A</hbase-column-family>
             <hbase-column-qualifier>black_wifi_cnt</hbase-column-qualifier>
-        </column-mapping>
-    </mapping-info>
-
-    <mapping-info>
-        <partition>
-            feature=loan_app_ht/data_date=20170430
-        </partition>
-        <column-mapping>
-            <hive-column-name>imei</hive-column-name>
-            <hive-column-type>string</hive-column-type>
-            <rowkey>true</rowkey>
-        </column-mapping>
-        <column-mapping>
-            <hive-column-name>value</hive-column-name>
-            <hive-column-type>string</hive-column-type>
-            <hbase-column-family>A</hbase-column-family>
-            <hbase-column-qualifier>loan_app_usage</hbase-column-qualifier>
-        </column-mapping>
-    </mapping-info>
-
-    <mapping-info>
-        <partition>
-            feature=imsi_cnt/data_date=20170430
-        </partition>
-        <column-mapping>
-            <hive-column-name>imei</hive-column-name>
-            <hive-column-type>string</hive-column-type>
-            <rowkey>true</rowkey>
-        </column-mapping>
-        <column-mapping>
-            <hive-column-name>value</hive-column-name>
-            <hive-column-type>string</hive-column-type>
-            <hbase-column-family>A</hbase-column-family>
-            <hbase-column-qualifier>imsi_cnt</hbase-column-qualifier>
         </column-mapping>
     </mapping-info>
 
@@ -97,109 +60,7 @@
         </column-mapping>
     </mapping-info>
 
-    <mapping-info>
-        <partition>
-            feature=age/data_date=20170430
-        </partition>
-        <column-mapping>
-            <hive-column-name>imei</hive-column-name>
-            <hive-column-type>string</hive-column-type>
-            <rowkey>true</rowkey>
-        </column-mapping>
-        <column-mapping>
-            <hive-column-name>value</hive-column-name>
-            <hive-column-type>string</hive-column-type>
-            <hbase-column-family>A</hbase-column-family>
-            <hbase-column-qualifier>age</hbase-column-qualifier>
-        </column-mapping>
-    </mapping-info>
-
-    <mapping-info>
-        <partition>
-            feature=gender/data_date=20170430
-        </partition>
-        <column-mapping>
-            <hive-column-name>imei</hive-column-name>
-            <hive-column-type>string</hive-column-type>
-            <rowkey>true</rowkey>
-        </column-mapping>
-        <column-mapping>
-            <hive-column-name>value</hive-column-name>
-            <hive-column-type>string</hive-column-type>
-            <hbase-column-family>A</hbase-column-family>
-            <hbase-column-qualifier>gender</hbase-column-qualifier>
-        </column-mapping>
-    </mapping-info>
-
-    <mapping-info>
-        <partition>
-            feature=pay_cnt/data_date=20170430
-        </partition>
-        <column-mapping>
-            <hive-column-name>imei</hive-column-name>
-            <hive-column-type>string</hive-column-type>
-            <rowkey>true</rowkey>
-        </column-mapping>
-        <column-mapping>
-            <hive-column-name>value</hive-column-name>
-            <hive-column-type>string</hive-column-type>
-            <hbase-column-family>A</hbase-column-family>
-            <hbase-column-qualifier>pay_preference</hbase-column-qualifier>
-        </column-mapping>
-    </mapping-info>
-
-    <mapping-info>
-        <partition>
-            feature=xyk_gj_cnt/data_date=20170430
-        </partition>
-        <column-mapping>
-            <hive-column-name>imei</hive-column-name>
-            <hive-column-type>string</hive-column-type>
-            <rowkey>true</rowkey>
-        </column-mapping>
-        <column-mapping>
-            <hive-column-name>value</hive-column-name>
-            <hive-column-type>string</hive-column-type>
-            <hbase-column-family>A</hbase-column-family>
-            <hbase-column-qualifier>credit_manager_app_cnt</hbase-column-qualifier>
-        </column-mapping>
-    </mapping-info>
-
-    <mapping-info>
-        <partition>
-            feature=game_assist_pkg_cnt/data_date=20170430
-        </partition>
-        <column-mapping>
-            <hive-column-name>imei</hive-column-name>
-            <hive-column-type>string</hive-column-type>
-            <rowkey>true</rowkey>
-        </column-mapping>
-        <column-mapping>
-            <hive-column-name>value</hive-column-name>
-            <hive-column-type>string</hive-column-type>
-            <hbase-column-family>A</hbase-column-family>
-            <hbase-column-qualifier>game_assistant_app_cnt</hbase-column-qualifier>
-        </column-mapping>
-    </mapping-info>
-
-    <mapping-info>
-        <partition>
-            feature=hj_open_cnt/data_date=20170430
-        </partition>
-        <column-mapping>
-            <hive-column-name>imei</hive-column-name>
-            <hive-column-type>string</hive-column-type>
-            <rowkey>true</rowkey>
-        </column-mapping>
-        <column-mapping>
-            <hive-column-name>value</hive-column-name>
-            <hive-column-type>string</hive-column-type>
-            <hbase-column-family>A</hbase-column-family>
-            <hbase-column-qualifier>itfin_app_usage</hbase-column-qualifier>
-        </column-mapping>
-    </mapping-info>
-
-    <mapping-info>
+   <mapping-info>
         <partition>
             feature=price/data_date=20170430
         </partition>
@@ -217,10 +78,7 @@
     </mapping-info>
 
     <mapping-info>
-        <partition>
-            feature=install_pkg_cnt/data_date=20170430
-        </partition>
-        <column-mapping>
+       <column-mapping>
             <hive-column-name>imei</hive-column-name>
             <hive-column-type>string</hive-column-type>
             <rowkey>true</rowkey>
@@ -230,125 +88,6 @@
             <hive-column-type>string</hive-column-type>
             <hbase-column-family>A</hbase-column-family>
             <hbase-column-qualifier>total_app_cnt</hbase-column-qualifier>
-        </column-mapping>
-    </mapping-info>
-
-    <mapping-info>
-        <partition>
-            feature=com.fenqile.fenqile/data_date=20170430
-        </partition>
-        <column-mapping>
-            <hive-column-name>imei</hive-column-name>
-            <hive-column-type>string</hive-column-type>
-            <rowkey>true</rowkey>
-        </column-mapping>
-        <column-mapping>
-            <hive-column-name>value</hive-column-name>
-            <hive-column-type>string</hive-column-type>
-            <hbase-column-family>A</hbase-column-family>
-            <hbase-column-qualifier>hire_purchase_behavior</hbase-column-qualifier>
-        </column-mapping>
-    </mapping-info>
-
-    <mapping-info>
-        <partition>
-            feature=com.pingan.yzt/data_date=20170430
-        </partition>
-        <column-mapping>
-            <hive-column-name>imei</hive-column-name>
-            <hive-column-type>string</hive-column-type>
-            <rowkey>true</rowkey>
-        </column-mapping>
-        <column-mapping>
-            <hive-column-name>value</hive-column-name>
-            <hive-column-type>string</hive-column-type>
-            <hbase-column-family>A</hbase-column-family>
-            <hbase-column-qualifier>credit_card_limit_consultation</hbase-column-qualifier>
-        </column-mapping>
-    </mapping-info>
-
-    <mapping-info>
-        <partition>
-            feature=com.cashregisters.cn/data_date=20170430
-        </partition>
-        <column-mapping>
-            <hive-column-name>imei</hive-column-name>
-            <hive-column-type>string</hive-column-type>
-            <rowkey>true</rowkey>
-        </column-mapping>
-        <column-mapping>
-            <hive-column-name>value</hive-column-name>
-            <hive-column-type>string</hive-column-type>
-            <hbase-column-family>A</hbase-column-family>
-            <hbase-column-qualifier>pos_pay_behavior</hbase-column-qualifier>
-        </column-mapping>
-    </mapping-info>
-
-    <mapping-info>
-        <partition>
-            feature=com.yanxin.eloanan/data_date=20170430
-        </partition>
-        <column-mapping>
-            <hive-column-name>imei</hive-column-name>
-            <hive-column-type>string</hive-column-type>
-            <rowkey>true</rowkey>
-        </column-mapping>
-        <column-mapping>
-            <hive-column-name>value</hive-column-name>
-            <hive-column-type>string</hive-column-type>
-            <hbase-column-family>A</hbase-column-family>
-            <hbase-column-qualifier>large_loan_preference</hbase-column-qualifier>
-        </column-mapping>
-    </mapping-info>
-
-    <mapping-info>
-        <partition>
-            feature=com.baidu.wallet/data_date=20170430
-        </partition>
-        <column-mapping>
-            <hive-column-name>imei</hive-column-name>
-            <hive-column-type>string</hive-column-type>
-            <rowkey>true</rowkey>
-        </column-mapping>
-        <column-mapping>
-            <hive-column-name>value</hive-column-name>
-            <hive-column-type>string</hive-column-type>
-            <hbase-column-family>A</hbase-column-family>
-            <hbase-column-qualifier>life_convenience_behavior</hbase-column-qualifier>
-        </column-mapping>
-    </mapping-info>
-
-    <mapping-info>
-        <partition>
-            feature=com.yongqianbao.credit/data_date=20170430
-        </partition>
-        <column-mapping>
-            <hive-column-name>imei</hive-column-name>
-            <hive-column-type>string</hive-column-type>
-            <rowkey>true</rowkey>
-        </column-mapping>
-        <column-mapping>
-            <hive-column-name>value</hive-column-name>
-            <hive-column-type>string</hive-column-type>
-            <hbase-column-family>A</hbase-column-family>
-            <hbase-column-qualifier>short_loan_behavior</hbase-column-qualifier>
-        </column-mapping>
-    </mapping-info>
-
-    <mapping-info>
-        <partition>
-            feature=com.caimi.creditcard/data_date=20170430
-        </partition>
-        <column-mapping>
-            <hive-column-name>imei</hive-column-name>
-            <hive-column-type>string</hive-column-type>
-            <rowkey>true</rowkey>
-        </column-mapping>
-        <column-mapping>
-            <hive-column-name>value</hive-column-name>
-            <hive-column-type>string</hive-column-type>
-            <hbase-column-family>A</hbase-column-family>
-            <hbase-column-qualifier>credit_card_repayment_consultation</hbase-column-qualifier>
         </column-mapping>
     </mapping-info>
 </config>
