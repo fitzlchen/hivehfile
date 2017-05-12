@@ -44,26 +44,30 @@ public class GenericMapReduce implements Tool {
 
     public static class GenericMapper extends Mapper<LongWritable, Text, ImmutableBytesWritable, KeyValue> {
         private cn.jiguang.hivehfile.Configuration selfDefinedConfig = null;
+
         @Override
         public void setup(Context context) throws IOException {
             // 读取HDFS配置文件，并将其封装成对象
-            selfDefinedConfig = XmlUtil.generateConfigurationFromXml(context.getConfiguration(),context.getConfiguration().get("config.file.path"));
+            selfDefinedConfig = XmlUtil.generateConfigurationFromXml(context.getConfiguration(), context.getConfiguration().get("config.file.path"));
         }
 
         @Override
         public void map(LongWritable key, Text value, Mapper.Context context) throws IOException, InterruptedException {
             String inputString = value.toString();
             // 获取数据文件的路径
-            String dataFilePath = ((FileSplit)context.getInputSplit()).getPath().toString();
+            String dataFilePath = ((FileSplit) context.getInputSplit()).getPath().toString();
             String[] values = inputString.split(selfDefinedConfig.getDelimiterCollection().get("field-delimiter"));
             // 获取当前 MappingInfo
-            MappingInfo currentMappingInfo = XmlUtil.extractCurrentMappingInfo(dataFilePath ,selfDefinedConfig.getMappingInfoList());
+            MappingInfo currentMappingInfo = XmlUtil.extractCurrentMappingInfo(dataFilePath, selfDefinedConfig.getMappingInfoList());
             // 在每一行数据中，rowkey 和 timestamp 都固定不变
             ImmutableBytesWritable rowkey = new ImmutableBytesWritable(Bytes.toBytes(values[XmlUtil.extractRowkeyIndex(currentMappingInfo)]));
             Long ts = 0L;
-            // 解析数据文件路径，获取数据日期 data_date
+            /*
+             * 解析数据文件路径，获取数据日期 data_date
+             * 当数据文件路径中不含有 data_date 时，默认使用当前时间
+             */
             try {
-                ts = DateUtil.convertStringToUnixTime(dataFilePath,"yyyyMMdd","data_date=(\\d{8})");
+                ts = DateUtil.convertStringToUnixTime(dataFilePath, "yyyyMMdd", "data_date=(\\d{8})");
             } catch (ParseException e) {
                 logger.fatal("无法解析数据日期，请检查InputPath和Partition的填写！");
                 System.exit(-1);    // 异常直接退出
@@ -103,7 +107,7 @@ public class GenericMapReduce implements Tool {
      */
     public int run(String[] args) throws Exception {
         configFilePath = args[0];
-        cn.jiguang.hivehfile.Configuration selfDefinedConfig = XmlUtil.generateConfigurationFromXml(configuration,configFilePath);
+        cn.jiguang.hivehfile.Configuration selfDefinedConfig = XmlUtil.generateConfigurationFromXml(configuration, configFilePath);
         // 将 InputPath 与所有 partition 拼接
         String inputPath = selfDefinedConfig.getAllInputPath();
         String outputPath = selfDefinedConfig.getOutputPath(),
@@ -112,7 +116,7 @@ public class GenericMapReduce implements Tool {
         configuration.set("hbase.zookeeper.property.clientPort", selfDefinedConfig.getHbaseZookeeperPropertyClientPort());
         configuration.set("hbase.zookeeper.property.maxClientCnxns", selfDefinedConfig.getHbaseZookeeperPropertyMaxClientCnxns());
         configuration.set("zookeeper.znode.parent", selfDefinedConfig.getHbaseZnodeParent());
-        configuration.set("config.file.path",configFilePath);
+        configuration.set("config.file.path", configFilePath);
         Job job = Job.getInstance(configuration);
         job.addCacheFile(new Path(args[0]).toUri());
         job.setJarByClass(GenericMapReduce.class);

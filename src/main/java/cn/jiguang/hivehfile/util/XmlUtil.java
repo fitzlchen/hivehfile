@@ -33,8 +33,8 @@ public class XmlUtil {
         for (Element $e : mappingInfoList) {
             MappingInfo mappingInfo = new MappingInfo();
             // MappingInfo中可能不含有partition信息
-            if($e.element("partition")!=null){
-                mappingInfo.setPartition($e.elementText("partition").replaceAll("\\s",""));
+            if ($e.element("partition") != null) {
+                mappingInfo.setPartition($e.elementText("partition").replaceAll("\\s", ""));
             }
             Iterator<Element> iterator = $e.elements("column-mapping").iterator();
             while (iterator.hasNext()) {
@@ -64,27 +64,39 @@ public class XmlUtil {
 
     /**
      * 获取当前数据文件对应的 MappingInfo
+     *
      * @param dataFilePath
      * @param mappingInfoList
      * @return
      */
     public static MappingInfo extractCurrentMappingInfo(String dataFilePath, ArrayList<MappingInfo> mappingInfoList) {
         MappingInfo result = null;
-        for (MappingInfo $map : mappingInfoList) {
-            // 检查数据文件路径中是否含有分区信息，以定位所需使用的MappingInfo。
-            for(String $partitionSegment : $map.getPartition().split(",")){
-                if(dataFilePath.indexOf($partitionSegment)!=-1){    // 找到对应 MappingInfo
-                    result = $map;
-                    break;
+        /* 判断是否是分区表
+         * true  分区表
+         * false 非分区表
+         */
+        boolean isPartitionedTable = false;
+        if (mappingInfoList != null) isPartitionedTable = mappingInfoList.get(0).getPartition() == null ? false : true;
+        if (isPartitionedTable) {
+            for (MappingInfo $map : mappingInfoList) {
+                // 检查数据文件路径中是否含有分区信息，以定位所需使用的MappingInfo。
+                for (String $partitionSegment : $map.getPartition().split(",")) {
+                    if (dataFilePath.indexOf($partitionSegment) != -1) {    // 找到对应 MappingInfo
+                        result = $map;
+                        break;
+                    }
                 }
+                if (result != null) break;
             }
-            if( result != null)break;
+        } else {
+            result = mappingInfoList.get(0);
         }
         return result;
     }
 
     /**
      * 返回当前MappingInfo的rowkey字段名
+     *
      * @param mappingInfo
      * @return
      */
@@ -209,7 +221,8 @@ public class XmlUtil {
 
     /**
      * 将配置文件实例化成一个Configuration对象
-     * @param conf Hadoop Configuration
+     *
+     * @param conf           Hadoop Configuration
      * @param configFilePath 配置文件的HDFS路径
      * @return
      * @throws IOException

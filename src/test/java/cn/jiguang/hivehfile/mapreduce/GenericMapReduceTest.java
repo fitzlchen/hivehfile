@@ -46,13 +46,13 @@ public class GenericMapReduceTest {
     //        @Test
     public void testReadSomeConfigFromHdfs() {
         HashMap<String, String> expected = new HashMap<String, String>();
-        expected.put("input-path", "hdfs://nameservice1/tmp/test-hfile-input");
-        expected.put("output-path", "hdfs://nameservice1/tmp/test-hfile-output");
-        expected.put("htable-name", "fraud_feature_nor");
+        expected.put("input-path", "hdfs://nameservice1/user/hive/warehouse/dmp.db/rt_jid_v2");
+        expected.put("output-path", "hdfs://nameservice1/tmp/user-profile/CID_JID");
+        expected.put("htable-name", "bt_iaudience");
 
-        String inStr = "    <input-path>hdfs://nameservice1/tmp/test-hfile-input</input-path>\n" +
-                "    <output-path>hdfs://nameservice1/tmp/test-hfile-output</output-path>\n" +
-                "    <htable-name>fraud_feature_nor</htable-name>";
+        String inStr = "    <input-path>hdfs://nameservice1/user/hive/warehouse/dmp.db/rt_jid_v2<</input-path>\n" +
+                "    <output-path>hdfs://nameservice1/tmp/user-profile/CID_JID</output-path>\n" +
+                "    <htable-name>bt_iaudience</htable-name>";
         HashMap<String, String> actual = new HashMap<String, String>();
         Matcher inputPathMatcher = Pattern.compile("<input-path>(.+)</input-path>").matcher(inStr);
         if (inputPathMatcher.find())
@@ -71,8 +71,8 @@ public class GenericMapReduceTest {
         HashMap<String, String> expected = new HashMap<String, String>();
         expected.put("rowKey", "0000");
         expected.put("columnFamily", "A");
-        expected.put("column", "total_app_cnt");
-        expected.put("ts", "1493049600000");
+        expected.put("column", "CID_JID");
+        expected.put("ts", "1494518400000");
         expected.put("value", "lion");
         mapDriver.withInput(new LongWritable(0), new Text("0000\u0001lion"))
                 .withOutput(new ImmutableBytesWritable(Bytes.toBytes("0000")), new Text(expected.toString()))
@@ -98,14 +98,17 @@ class GenericMapper extends Mapper<LongWritable, Text, ImmutableBytesWritable, T
     public void map(LongWritable key, Text value, Mapper.Context context) throws IOException, InterruptedException {
         String inputString = value.toString();
         // 获取数据文件的路径
-        String dataFilePath = "hdfs://nameservice1/tmp/test-hfile-input/feature=install_pkg_cnt/data_date=2017042500";
+        String dataFilePath = "hdfs://nameservice1/user/hive/warehouse/dmp.db/rt_jid_v2/data/data_date=20170507";
         String[] values = inputString.split(selfDefinedConfig.getDelimiterCollection().get("field-delimiter"));
         // 获取当前 MappingInfo
         MappingInfo currentMappingInfo = XmlUtil.extractCurrentMappingInfo(dataFilePath ,selfDefinedConfig.getMappingInfoList());
         // 在每一行数据中，rowkey 和 timestamp 都固定不变
         ImmutableBytesWritable rowkey = new ImmutableBytesWritable(Bytes.toBytes(values[XmlUtil.extractRowkeyIndex(currentMappingInfo)]));
         Long ts = 0L;
-        // 解析数据文件路径，获取数据日期 data_date
+        /*
+         * 解析数据文件路径，获取数据日期 data_date
+         * 当数据文件路径中不含有 data_date 时，默认使用当前时间
+         */
         try {
             ts = DateUtil.convertStringToUnixTime(dataFilePath,"yyyyMMdd","data_date=(\\d{8})");
         } catch (ParseException e) {

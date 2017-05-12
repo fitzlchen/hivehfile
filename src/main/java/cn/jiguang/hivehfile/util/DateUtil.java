@@ -2,6 +2,7 @@ package cn.jiguang.hivehfile.util;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -13,6 +14,7 @@ public class DateUtil {
 
     /**
      * 将日期从含有日期的字符串中提取出来，并转换为Unix Time
+     * 如果输入字符串中不含有日期，则默认采用系统当前时间
      * @param inputString 含有日期的字符串
      * @param dateFormat    日期格式
      * @param regex     提取日期的正则表达式
@@ -23,10 +25,11 @@ public class DateUtil {
         SimpleDateFormat dateFormattor = new SimpleDateFormat(dateFormat);
         Matcher matcher = Pattern.compile(regex).matcher(inputString);
         String mStr = null;
+        Long ts = dateFormattor.parse(dateFormattor.format(new Date())).getTime();
         if(matcher.find()) {
             mStr = matcher.group(1);
+            ts = dateFormattor.parse(mStr).getTime();  // data_date=yyyyMMdd
         }
-        Long ts = dateFormattor.parse(mStr).getTime();  // data_date=yyyyMMdd
         return ts;
     }
 

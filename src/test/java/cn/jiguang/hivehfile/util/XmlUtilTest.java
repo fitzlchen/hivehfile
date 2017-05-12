@@ -72,7 +72,7 @@ public class XmlUtilTest {
 
     @Test
     public void testGetAllInputpath(){
-        assertEquals("hdfs://nameservice1/user/hive/warehouse/tmp.db/api_feature_nor_v1,hdfs://nameservice1/user/hive/warehouse/tmp.db/api_feature_nor_v1/feature=rent_car_pkg_cnt/data_date=20170430,hdfs://nameservice1/user/hive/warehouse/tmp.db/api_feature_nor_v1/feature=loan_times/data_date=20170430,hdfs://nameservice1/user/hive/warehouse/tmp.db/api_feature_nor_v1/feature=price/data_date=20170430,hdfs://nameservice1/user/hive/warehouse/tmp.db/api_feature_nor_v1"
+        assertEquals("hdfs://nameservice1/user/hive/warehouse/tmp.db/hfile_rt_career"
                 ,configuration.getAllInputPath());
     }
 
