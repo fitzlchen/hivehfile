@@ -4,6 +4,7 @@ import cn.jiguang.hivehfile.Configuration;
 import cn.jiguang.hivehfile.model.MappingInfo;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
+import org.dom4j.DocumentHelper;
 import org.dom4j.io.SAXReader;
 import org.junit.Before;
 import org.junit.Test;
@@ -11,6 +12,9 @@ import org.junit.Test;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import static org.junit.Assert.*;
 /**
  * Created by jiguang
@@ -22,8 +26,10 @@ public class XmlUtilTest {
     Configuration configuration = null;
     @Before
     public void setup() throws DocumentException, IOException {
+        org.apache.hadoop.conf.Configuration conf = new org.apache.hadoop.conf.Configuration();
+        conf.set("user.defined.parameters","{'inPath':'hdfs://nameservice1/user/hive/warehouse/dmp.db/rt_jid_v2','outPath':'hdfs://nameservice1/tmp/user-profile/CID_JID','partition':'data_date=20170507,data_date=20170508,data_date=20170509,data_date=20170510','hive-column-name':'value','hive-column-type':'string'}' ");;
         document = saxReader.read("mr-config.xml");
-        configuration = XmlUtil.generateConfigurationFromXml(new org.apache.hadoop.conf.Configuration(),"mr-config.xml");
+        configuration = XmlUtil.generateConfigurationFromXml(conf,"src/test/resources/test-config.xml");
     }
 
 //    @Test
@@ -70,7 +76,7 @@ public class XmlUtilTest {
       assertEquals("fraud_feature_nor",XmlUtil.extractHtableName(document));
     }
 
-    @Test
+//    @Test
     public void testGetAllInputpath(){
         assertEquals("hdfs://nameservice1/user/hive/warehouse/tmp.db/hfile_rt_career"
                 ,configuration.getAllInputPath());
@@ -104,4 +110,26 @@ public class XmlUtilTest {
         assertEquals("\u0001",actual.get("field-delimiter"));
     }
 
+    //    @Test
+    public void testRegex(){
+        String str = "${adsads},${sadsadas}";
+        Matcher matcher = Pattern.compile("\\$\\{.+?\\}").matcher(str);
+        while(matcher.find())
+            System.out.println(matcher.group());
+    }
+
+//    @Test
+    public void testDom4jConvert() throws DocumentException {
+        String str = "<root><element>1</element></root>";
+        Document doc = DocumentHelper.parseText(str);
+        System.out.println(doc.getRootElement().elementText("element"));
+    }
+
+    @Test
+    public void testVariableReplacement() throws DocumentException {
+        SAXReader reader = new SAXReader();
+        Document actual = reader.read(XmlUtilTest.class.getResourceAsStream("/test-config.xml"));
+        actual = XmlUtil.variableReplacement(actual,"{'inPath':'hdfs://nameservice1/user/hive/warehouse/dmp.db/rt_jid_v2','outPath':'hdfs://nameservice1/tmp/user-profile/CID_JID','partition':'data_date=20170507,data_date=20170508,data_date=20170509,data_date=20170510','hive-column-name':'value','hive-column-type':'string'}'");
+        assertEquals(document, actual);
+    }
 }

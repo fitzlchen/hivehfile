@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<config>
+    <!-- Global Settings -->
+    <input-path>${inPath}</input-path>
+    <output-path>${outPath}</output-path>
+    <htable-name>bt_iaudience</htable-name>
+    <field-delimiter>\u0001</field-delimiter>
+    <collection-item-delimiter>,</collection-item-delimiter>
+    <hbase.zookeeper.quorum>192.168.254.71,192.168.254.72,192.168.254.73</hbase.zookeeper.quorum>
+    <hbase.zookeeper.property.clientPort>2181</hbase.zookeeper.property.clientPort>
+    <hbase.zookeeper.property.maxClientCnxns>400</hbase.zookeeper.property.maxClientCnxns>
+    <hbase.znode.parent>/hbase</hbase.znode.parent>
+
+    <!-- Local Settings -->
+    <mapping-info>
+        <partition>
+            ${partition}
+        </partition>
+        <column-mapping>
+            <hive-column-name>imei</hive-column-name>
+            <hive-column-type>string</hive-column-type>
+            <rowkey>true</rowkey>
+        </column-mapping>
+        <column-mapping>
+            <hive-column-name>${hive-column-name}</hive-column-name>
+            <hive-column-type>${hive-column-type}</hive-column-type>
+            <hbase-column-family>A</hbase-column-family>
+            <hbase-column-qualifier>CID_JID</hbase-column-qualifier>
+        </column-mapping>
+    </mapping-info>
+</config>

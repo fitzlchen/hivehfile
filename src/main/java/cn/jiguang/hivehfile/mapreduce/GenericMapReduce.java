@@ -2,6 +2,7 @@ package cn.jiguang.hivehfile.mapreduce;
 
 import cn.jiguang.hivehfile.model.MappingInfo;
 import cn.jiguang.hivehfile.util.DateUtil;
+import cn.jiguang.hivehfile.util.MapUtil;
 import cn.jiguang.hivehfile.util.PrintUtil;
 import cn.jiguang.hivehfile.util.XmlUtil;
 import org.apache.hadoop.conf.Configuration;
@@ -106,7 +107,20 @@ public class GenericMapReduce implements Tool {
      * @throws Exception
      */
     public int run(String[] args) throws Exception {
+        if(args.length == 0){
+            logger.fatal("缺少配置文件路径，请检查传递的参数！");
+            System.exit(-1);
+        }
         configFilePath = args[0];
+        // 如果含有两个参数，则将第二个参数视为XML变量字典
+        if(args.length==2) {
+            configuration.set("user.defined.parameters",args[1]);
+            logger.info("接收到的字典字符串："+ args[1]);
+            if(MapUtil.convertStringToMap(args[1]) == null){
+                logger.fatal("传入的字符串无法解析成字典，请检查输入参数！");
+                System.exit(-1);    // 直接异常退出
+            }
+        }
         cn.jiguang.hivehfile.Configuration selfDefinedConfig = XmlUtil.generateConfigurationFromXml(configuration, configFilePath);
         // 将 InputPath 与所有 partition 拼接
         String inputPath = selfDefinedConfig.getAllInputPath();

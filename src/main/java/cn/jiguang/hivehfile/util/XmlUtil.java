@@ -8,11 +8,14 @@ import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
+import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by jiguang
@@ -237,7 +240,10 @@ public class XmlUtil {
         SAXReader saxReader = new SAXReader();
         Document document = null;
         try {
-            document = saxReader.read(fileSystem.open(new Path(configFilePath)));
+            if (conf.get("user.defined.parameters")!=null)
+                document = variableReplacement(saxReader.read(fileSystem.open(new Path(configFilePath))), conf.get("user.defined.parameters"));
+            else
+                document = saxReader.read(fileSystem.open(new Path(configFilePath)));
         } catch (DocumentException e) {
             logger.fatal("解析配置文件时发生错误，请检查文件填写内容！\n" + e.getMessage());
             System.exit(-1); // 解析配置文件失败，直接退出程序
@@ -254,5 +260,32 @@ public class XmlUtil {
         selfDefinedConfig.setHbaseZookeeperPropertyMaxClientCnxns(XmlUtil.extractHbaseMaxClientCnxns(document));
         selfDefinedConfig.setHbaseZnodeParent(XmlUtil.extractHbaseParent(document));
         return selfDefinedConfig;
+    }
+
+    /**
+     *  根据传入的参数，替换XML中对应的占位符
+     * @param doc
+     * @return
+     */
+    public static Document variableReplacement(Document doc, String input) throws DocumentException {
+        HashMap<String,String> xmlParmas = MapUtil.convertStringToMap(input);
+            /*
+             *  将XML转换成字符串，并进行占位符替换
+             *  占位符形如 ${AAA}
+             */
+        String xmlString = doc.asXML();
+        logger.info("传入字典："+input);
+        for(Map.Entry<String,String> $e : xmlParmas.entrySet()){
+            xmlString = xmlString.replace("${"+$e.getKey()+"}",$e.getValue());
+        }
+        logger.info("替换参数后的文档："+xmlString);
+        // 字符串中是否还含有形如${ }的占位符
+        Matcher matcher = Pattern.compile("\\$\\{.+?\\}").matcher(xmlString);
+        if(matcher.find() != false){
+            logger.error("配置文件中含有\"$\"，请检查占位符是否被替换");
+            System.exit(-1);    // 直接异常退出
+        }
+        // 将字符串恢复成 XML
+        return DocumentHelper.parseText(xmlString);
     }
 }
