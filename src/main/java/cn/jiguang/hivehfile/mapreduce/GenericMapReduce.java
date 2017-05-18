@@ -40,7 +40,7 @@ import java.util.HashMap;
  */
 public class GenericMapReduce implements Tool {
     static Logger logger = LogManager.getLogger(GenericMapReduce.class);
-    static Configuration configuration = new Configuration();
+    static Configuration configuration = null;
     private String configFilePath = null;
 
     public static class GenericMapper extends Mapper<LongWritable, Text, ImmutableBytesWritable, KeyValue> {
@@ -132,7 +132,6 @@ public class GenericMapReduce implements Tool {
         configuration.set("zookeeper.znode.parent", selfDefinedConfig.getHbaseZnodeParent());
         configuration.set("config.file.path", configFilePath);
         Job job = Job.getInstance(configuration);
-        job.addCacheFile(new Path(args[0]).toUri());
         job.setJarByClass(GenericMapReduce.class);
         job.setMapperClass(GenericMapReduce.GenericMapper.class);
         job.setMapOutputKeyClass(ImmutableBytesWritable.class);

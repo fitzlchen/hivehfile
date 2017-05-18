@@ -196,7 +196,12 @@ public class XmlUtil {
      */
     public static HashMap<String, String> extractDelimiterCollection(Document document) {
         HashMap<String, String> result = new HashMap<String, String>();
-        result.put("field-delimiter", String.valueOf((char) Integer.parseInt(document.getRootElement().elementText("field-delimiter").substring(2))));
+        // 当分隔符为 \u0001时，使用 (char)0001表示
+        if("\u0001".equals(document.getRootElement().elementText("field-delimiter"))){
+            result.put("field-delimiter", String.valueOf((char) Integer.parseInt(document.getRootElement().elementText("field-delimiter").substring(2))));
+        }else{
+            result.put("field-delimiter",document.getRootElement().elementText("field-delimiter"));
+        }
         result.put("collection-item-delimiter", document.getRootElement().elementText("collection-item-delimiter"));
         return result;
     }
@@ -240,10 +245,7 @@ public class XmlUtil {
         SAXReader saxReader = new SAXReader();
         Document document = null;
         try {
-            if (conf.get("user.defined.parameters")!=null)
                 document = variableReplacement(saxReader.read(fileSystem.open(new Path(configFilePath))), conf.get("user.defined.parameters"));
-            else
-                document = saxReader.read(fileSystem.open(new Path(configFilePath)));
         } catch (DocumentException e) {
             logger.fatal("解析配置文件时发生错误，请检查文件填写内容！\n" + e.getMessage());
             System.exit(-1); // 解析配置文件失败，直接退出程序
@@ -268,6 +270,7 @@ public class XmlUtil {
      * @return
      */
     public static Document variableReplacement(Document doc, String input) throws DocumentException {
+        if(input == null) return doc;
         HashMap<String,String> xmlParmas = MapUtil.convertStringToMap(input);
             /*
              *  将XML转换成字符串，并进行占位符替换
