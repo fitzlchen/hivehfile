@@ -73,7 +73,10 @@ public class XmlUtilTest {
 
 //    @Test
     public void testExtractHtableName(){
-      assertEquals("fraud_feature_nor",XmlUtil.extractHtableName(document));
+//      assertEquals("fraud_feature_nor",XmlUtil.extractHtableName(document));
+        String htableName = XmlUtil.extractHtableName(document);
+        System.out.println(htableName.split(":")[0]+":"+htableName.split(":")[1]);
+        assertEquals("tags:xhqb_tag",htableName.split(":")[0]+":"+htableName.split(":")[1]);
     }
 
 //    @Test
@@ -104,10 +107,10 @@ public class XmlUtilTest {
 //    @Test
     public void testExtractDelimiterCollection(){
         HashMap<String,String> expected = new HashMap<String, String>();
-        expected.put("field-delimiter","\u0001");
+        expected.put("field-delimiter","0001");
         expected.put("collection-item-delimiter",",");
         HashMap<String,String> actual = XmlUtil.extractDelimiterCollection(document);
-        assertEquals("\u0001",actual.get("field-delimiter"));
+        assertEquals("0001",actual.get("field-delimiter"));
     }
 
     //    @Test
@@ -132,4 +135,5 @@ public class XmlUtilTest {
         actual = XmlUtil.variableReplacement(actual,"{'inPath':'hdfs://nameservice1/user/hive/warehouse/dmp.db/rt_jid_v2','outPath':'hdfs://nameservice1/tmp/user-profile/CID_JID','partition':'data_date=20170507,data_date=20170508,data_date=20170509,data_date=20170510','hive-column-name':'value','hive-column-type':'string'}'");
         assertEquals(document, actual);
     }
+
 }

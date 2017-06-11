@@ -16,6 +16,7 @@ import org.apache.hadoop.hbase.client.RegionLocator;
 import org.apache.hadoop.hbase.client.Table;
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
 import org.apache.hadoop.hbase.mapreduce.HFileOutputFormat2;
+import org.apache.hadoop.hbase.mapreduce.TableMapReduceUtil;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
@@ -31,8 +32,6 @@ import org.apache.log4j.Logger;
 
 import java.io.IOException;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.HashMap;
 
 /**
  * Created by jiguang
@@ -87,12 +86,23 @@ public class GenericMapReduce implements Tool {
                         && currentMappingInfo.getColumnMappingList().get(i).get("hbase-column-family") != null
                         && currentMappingInfo.getColumnMappingList().get(i).get("hbase-column-qualifier") != null
                         ) {  // 只遍历非 Rowkey 且 需要写入 HBase 的字段
-                    kv = new KeyValue(Bytes.toBytes(values[XmlUtil.extractRowkeyIndex(currentMappingInfo)]),
-                            Bytes.toBytes(currentMappingInfo.getColumnMappingList().get(i).get("hbase-column-family")),
-                            Bytes.toBytes(currentMappingInfo.getColumnMappingList().get(i).get("hbase-column-qualifier")),
-                            ts,
-                            Bytes.toBytes(PrintUtil.escapeConnotation(values[i]))
-                    );
+                    try {
+                        String transformedValue = PrintUtil.escapeConnotation(values[i]);
+                        // 字段取值可能为空，将所有空值 \\N 转换为空串
+                        if ("\\N".equals(transformedValue)) {
+                            transformedValue = "";
+                        }
+                        kv = new KeyValue(Bytes.toBytes(values[XmlUtil.extractRowkeyIndex(currentMappingInfo)]),
+                                Bytes.toBytes(currentMappingInfo.getColumnMappingList().get(i).get("hbase-column-family")),
+                                Bytes.toBytes(currentMappingInfo.getColumnMappingList().get(i).get("hbase-column-qualifier")),
+                                ts,
+                                Bytes.toBytes(transformedValue)
+                        );
+                    } catch (Exception e) {
+                        logger.error("异常数据：" + values[XmlUtil.extractRowkeyIndex(currentMappingInfo)] + ":" +
+                                PrintUtil.escapeConnotation(values[i]));
+                        logger.error(e.getMessage());
+                    }
                 }
                 if (kv != null) context.write(rowkey, kv);
             }
@@ -107,16 +117,16 @@ public class GenericMapReduce implements Tool {
      * @throws Exception
      */
     public int run(String[] args) throws Exception {
-        if(args.length == 0){
+        if (args.length == 0) {
             logger.fatal("缺少配置文件路径，请检查传递的参数！");
             System.exit(-1);
         }
         configFilePath = args[0];
         // 如果含有两个参数，则将第二个参数视为XML变量字典
-        if(args.length==2) {
-            configuration.set("user.defined.parameters",args[1]);
-            logger.info("接收到的字典字符串："+ args[1]);
-            if(MapUtil.convertStringToMap(args[1]) == null){
+        if (args.length == 2) {
+            configuration.set("user.defined.parameters", args[1]);
+            logger.info("接收到的字典字符串：" + args[1]);
+            if (MapUtil.convertStringToMap(args[1]) == null) {
                 logger.fatal("传入的字符串无法解析成字典，请检查输入参数！");
                 System.exit(-1);    // 直接异常退出
             }
@@ -144,8 +154,11 @@ public class GenericMapReduce implements Tool {
         FileOutputFormat.setOutputPath(job, new Path(outputPath));
         Configuration hbaseConf = HBaseConfiguration.create(configuration);
         Connection hbaseConnection = ConnectionFactory.createConnection(hbaseConf);
+        logger.info("HTABLE INFO===>TableName:" + htableName);
         Table table = hbaseConnection.getTable(TableName.valueOf(htableName));
         RegionLocator regionLocator = hbaseConnection.getRegionLocator(TableName.valueOf(htableName));
+        logger.info("START INCREMENTALLOAD...");
+        logger.info("VALIDATE NAMESPACE:" + table.getTableDescriptor().getNameAsString());
         HFileOutputFormat2.configureIncrementalLoad(job, table, regionLocator);
         if (!job.waitForCompletion(true)) {
             logger.error("Failed, input:" + inputPath + ", output:" + outputPath);

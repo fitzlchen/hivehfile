@@ -3,7 +3,7 @@
     <!-- Global Settings -->
     <input-path>hdfs://nameservice1/user/hive/warehouse/dmp.db/rt_jid_v2</input-path>
     <output-path>hdfs://nameservice1/tmp/user-profile/CID_JID</output-path>
-    <htable-name>bt_iaudience</htable-name>
+    <htable-name>tags:xhqb_tag</htable-name>
     <field-delimiter>\u0001</field-delimiter>
     <collection-item-delimiter>,</collection-item-delimiter>
     <hbase.zookeeper.quorum>192.168.254.71,192.168.254.72,192.168.254.73</hbase.zookeeper.quorum>
