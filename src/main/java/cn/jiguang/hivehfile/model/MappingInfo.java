@@ -32,6 +32,15 @@ public class MappingInfo {
         this.columnMappingList = columnMappingList;
     }
 
+    /**
+     * 检验数据文件的字段数是否与配置文件中 MappingInfo 所含的 ColumnMapping 数目一致
+     * @param num 数据文件的字段数
+     * @return
+     */
+    public boolean isColumnMatch(int num){
+        return columnMappingList.size()==num;
+    }
+
     public boolean equals(Object obj){
         return EqualsBuilder.reflectionEquals(this,obj);
     }

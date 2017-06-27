@@ -24,7 +24,15 @@ public class Configuration {
 
     private HashMap<String,String> delimiterCollection;
 
+    /**
+     * 根据 InputPath+Partition ,生成所有待读取的文件路径
+     * @return
+     */
     public String getAllInputPath(){
+        // 当 inputPath 以／结尾时，删除结尾的/
+        if(inputPath.endsWith("/")){
+            inputPath = inputPath.substring(0,inputPath.length()-1);
+        }
         StringBuffer sb = new StringBuffer();
         for(MappingInfo $m : mappingInfoList){
             if($m.getPartition() != null && !"".equals($m.getPartition())){
