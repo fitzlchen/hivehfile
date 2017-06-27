@@ -196,15 +196,27 @@
 </p>
 <hr>
 <h3>命令行调用方式</h3>
-<p>命令行允许携带1-2个参数</p>
-<p>第一个参数是配置文件的HDFS路径，第二个参数是替换配置文件的变量字典</p>
-<p>当传递1个参数时，HDFS配置文件即是程序使用的配置文件</p>
-<p>当传递2个参数时，程序会使用第二个参数作为变量字典，替换配置文件中对应的占位符（配置文件占位符用${variableName}表示）。替换占位符后的配置文件才是程序最终使用的配置文件。</p>
+<p>命令行允许携带参数</p>
+<p>-config 是<b>必填参数</b>，用于指定配置文件的HDFS路径</p>
+<p>-dict 是<b>选填参数</b>，用于传递一个变量字典，以替换配置文件中对应的占位符</p>
+<p>-format 是<b>选填参数</b>，用于指定数据文件的格式。如果数据文件的格式为txt，则不需要填写该参数；如果数据文件的格式为parquet，则填写parquet</p>
 <pre>
-yarn jar <jar.name> JobExecutor <config-file.hdfs.path> <parameter.dict>
+yarn jar &lt;jar.name&gt; JobExecutor -config &lt;config-file.hdfs.path&gt; [-dict &lt;parameter.dict&gt;] [-format &lt;data.format&gt;]
 
 e.g.
-yarn jar hivehfile.jar JobExecutor  hdfs://nameservice1/tmp/hfile-config/hfile_rt_career-with-params.xml "{'input-path':'hdfs://nameservice1/user/hive/warehouse/tmp.db/hfile_rt_career','output-path':'hdfs://nameservice1/tmp/hfile/tmp.hfile_rt_career-with-params','hive-column-name':'career','hbase-column-family':'A','hbase-column-qualifier':'SOM_OCM_CAREER'}"
+#sample 1
+yarn jar hivehfile.jar JobExecutor -config hdfs://nameservice1/tmp/hfile-config/hfile_rt_career-with-params.xml 
+
+#sample 2
+yarn jar hivehfile.jar JobExecutor
+-config hdfs://nameservice1/tmp/hfile-config/hfile_rt_career-with-params.xml
+-dict "{'input-path':'hdfs://nameservice1/user/hive/warehouse/tmp.db/hfile_rt_career'}"
+
+#sample 3
+yarn jar hivehfile.jar JobExecutor  
+-config hdfs://nameservice1/tmp/hfile-config/hfile_rt_career-with-params.xml 
+-dict "{'input-path':'hdfs://nameservice1/user/hive/warehouse/tmp.db/hfile_rt_career'}"
+-format parquet
 </pre>
 <strong></strong>
 
