@@ -96,9 +96,9 @@ class GenericMapper extends Mapper<LongWritable, Text, ImmutableBytesWritable, T
 
     @Override
     public void map(LongWritable key, Text value, Mapper.Context context) throws IOException, InterruptedException {
-        String inputString = value.toString();
+        String inputString = "861845033162435\\N0.02\\N20170718\\NFIN_Payment_General";
         // 获取数据文件的路径
-        String dataFilePath = "hdfs://nameservice1/user/hive/warehouse/dmp.db/rt_jid_v2/data/data_date=20170507";
+        String dataFilePath = "hdfs://nameservice1/user/hive/warehouse/anti_fraud.db/jietiao_factor_data_r/";
         String[] values = inputString.split(selfDefinedConfig.getDelimiterCollection().get("field-delimiter"));
         // 获取当前 MappingInfo
         MappingInfo currentMappingInfo = XmlUtil.extractCurrentMappingInfo(dataFilePath ,selfDefinedConfig.getMappingInfoList());

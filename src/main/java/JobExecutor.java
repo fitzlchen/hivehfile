@@ -18,6 +18,7 @@ public class JobExecutor {
            ToolRunner.run(conf,new GenericMapReduce(),args);
         }catch (Exception e){
             logger.error(e.getMessage());
+            System.exit(-1);
         }
     }
 }

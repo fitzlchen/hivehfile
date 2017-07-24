@@ -24,7 +24,7 @@ import java.text.ParseException;
  * Description:
  */
 public class ParquetMapper extends Mapper<Void, GenericRecord, ImmutableBytesWritable, KeyValue> {
-    private Logger logger = LogManager.getLogger(TextMapper.class);
+    private Logger logger = LogManager.getLogger(ParquetMapper.class);
     private cn.jiguang.hivehfile.Configuration selfDefinedConfig = null;
 
     @Override
@@ -35,8 +35,8 @@ public class ParquetMapper extends Mapper<Void, GenericRecord, ImmutableBytesWri
 
     @Override
     public void map(Void key, GenericRecord value, Mapper.Context context) throws IOException, InterruptedException {
-        // 获取数据文件的路径
-        String dataFilePath = ((FileSplit) context.getInputSplit()).getPath().toString();
+        // 获取数据文件的父路径
+        String dataFilePath = ((FileSplit) context.getInputSplit()).getPath().getParent().toString();
         // 获取当前 MappingInfo
         MappingInfo currentMappingInfo = XmlUtil.extractCurrentMappingInfo(dataFilePath, selfDefinedConfig.getMappingInfoList());
         // 根据 MappingInfo 读取字段信息
@@ -52,7 +52,8 @@ public class ParquetMapper extends Mapper<Void, GenericRecord, ImmutableBytesWri
              * 当数据文件路径中不含有 data_date 时，默认使用当前时间
              */
         try {
-            ts = DateUtil.convertStringToUnixTime(dataFilePath, "yyyyMMdd", "data_date=(\\d{8})");
+//            ts = DateUtil.convertStringToUnixTime(dataFilePath, "yyyyMMdd", "data_date=(\\d{8})");
+            ts = DateUtil.generateUniqTimeStamp(dataFilePath, "yyyyMMdd", "data_date=(\\d{8})");
         } catch (ParseException e) {
             logger.fatal("无法解析数据日期，请检查InputPath和Partition的填写！");
             System.exit(-1);    // 异常直接退出
@@ -67,12 +68,13 @@ public class ParquetMapper extends Mapper<Void, GenericRecord, ImmutableBytesWri
              */
         for (int i = 0; i < values.length; i++) {
             KeyValue kv = null;
+            String transformedValue = null;
             if (i != XmlUtil.extractRowkeyIndex(currentMappingInfo)
                     && currentMappingInfo.getColumnMappingList().get(i).get("hbase-column-family") != null
                     && currentMappingInfo.getColumnMappingList().get(i).get("hbase-column-qualifier") != null
                     ) {  // 只遍历非 Rowkey 且 需要写入 HBase 的字段
                 try {
-                    String transformedValue = PrintUtil.escapeConnotation(values[i]);
+                    transformedValue = PrintUtil.escapeConnotation(values[i]);
                     // 字段取值可能为空，将所有空值 \\N 转换为空串
                     if ("\\N".equals(transformedValue)) {
                         transformedValue = "";
@@ -89,7 +91,9 @@ public class ParquetMapper extends Mapper<Void, GenericRecord, ImmutableBytesWri
                     logger.error(e.getMessage());
                 }
             }
-            if (kv != null) context.write(rowkey, kv);
+            if (kv != null) {
+                context.write(rowkey, kv);
+            }
         }
     }
 }
