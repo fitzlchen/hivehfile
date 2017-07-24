@@ -29,11 +29,12 @@ public class XmlUtilTest {
         org.apache.hadoop.conf.Configuration conf = new org.apache.hadoop.conf.Configuration();
         conf.set("user.defined.parameters","{'inPath':'hdfs://nameservice1/user/hive/warehouse/dmp.db/rt_jid_v2','outPath':'hdfs://nameservice1/tmp/user-profile/CID_JID','partition':'data_date=20170507,data_date=20170508,data_date=20170509,data_date=20170510','hive-column-name':'value','hive-column-type':'string'}' ");;
         document = saxReader.read("mr-config.xml");
-        configuration = XmlUtil.generateConfigurationFromXml(conf,"src/test/resources/test-config.xml");
+        configuration = XmlUtil.generateConfigurationFromXml(conf,"mr-config.xml");
     }
 
-//    @Test
+    @Test
     public void testExractMapppingInfoList(){
+        XmlUtil.extractMappingInfoList(document).get(1).getPartition();
         ArrayList<MappingInfo>  expected = new ArrayList<MappingInfo>();
         MappingInfo mappingInfo1 = new MappingInfo();
         MappingInfo mappingInfo2 = new MappingInfo();

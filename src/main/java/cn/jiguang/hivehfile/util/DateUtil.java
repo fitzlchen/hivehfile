@@ -59,22 +59,22 @@ public class DateUtil {
             ts = dateFormattor.parse(mStr).getTime();  // data_date=yyyyMMdd
         }
         // 当前纳秒的末3位
-        String nano = String.valueOf(System.nanoTime()).substring(12);
+        int nano = Integer.parseInt(String.valueOf(System.nanoTime()).substring(11));
         // 生成3位随机数
         double rand = Math.random() * 1000;
-        String randStr = null;
+        Long randStr = null;
         if (rand >= 100 && rand < 1000) {
-            randStr = String.valueOf(Math.floor(rand)).substring(0, 3);
+            randStr = Long.parseLong(String.valueOf(Math.floor(rand)).substring(0, 3)+"000");
         } else if ( rand >= 10 && rand <100 ){
-            randStr = "0" + String.valueOf(Math.floor(rand)).substring(0,2);
+            randStr = Long.parseLong(String.valueOf(Math.floor(rand)).substring(0,2)+"000");
         } else if (rand < 10 && rand > 0) {
-            randStr = "00" + String.valueOf(Math.floor(rand)).substring(0, 1);
+            randStr = Long.parseLong(String.valueOf(Math.floor(rand)).substring(0, 1)+"000");
         } else {
-            randStr = "000";
+            randStr = 0L;
         }
         SimpleDateFormat minuteFormatter = new SimpleDateFormat("mm");
-        String min = minuteFormatter.format(new Date());
-        ts = ts + Long.parseLong(min + randStr + nano);
+        Long min = Long.parseLong(minuteFormatter.format(new Date()))*1000000;
+        ts = ts + min + randStr + nano;
         return ts;
     }
 

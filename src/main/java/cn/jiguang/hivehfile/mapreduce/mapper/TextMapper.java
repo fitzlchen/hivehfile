@@ -54,7 +54,6 @@ public class TextMapper extends Mapper<LongWritable, Text, ImmutableBytesWritabl
              * 当数据文件路径中不含有 data_date 时，默认使用当前时间
              */
         try {
-//            ts = DateUtil.convertStringToUnixTime(dataFilePath, "yyyyMMdd", "data_date=(\\d{8})");
             ts = DateUtil.generateUniqTimeStamp(dataFilePath, "yyyyMMdd", "data_date=(\\d{8})");
         } catch (ParseException e) {
             logger.fatal("无法解析数据日期，请检查InputPath和Partition的填写！");

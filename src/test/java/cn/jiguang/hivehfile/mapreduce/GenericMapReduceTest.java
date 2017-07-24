@@ -43,7 +43,7 @@ public class GenericMapReduceTest {
     }
 
 
-    //        @Test
+//            @Test
     public void testReadSomeConfigFromHdfs() {
         HashMap<String, String> expected = new HashMap<String, String>();
         expected.put("input-path", "hdfs://nameservice1/user/hive/warehouse/dmp.db/rt_jid_v2");
@@ -96,12 +96,16 @@ class GenericMapper extends Mapper<LongWritable, Text, ImmutableBytesWritable, T
 
     @Override
     public void map(LongWritable key, Text value, Mapper.Context context) throws IOException, InterruptedException {
-        String inputString = "861845033162435\\N0.02\\N20170718\\NFIN_Payment_General";
+        String inputString = "861845033162435\u00010.02\u000120170718";
         // 获取数据文件的路径
-        String dataFilePath = "hdfs://nameservice1/user/hive/warehouse/anti_fraud.db/jietiao_factor_data_r/";
+        String dataFilePath = "hdfs://nameservice1/user/hive/warehouse/anti_fraud.db/expand_blacklist_output_r/data_date=20161231/list=expand";
         String[] values = inputString.split(selfDefinedConfig.getDelimiterCollection().get("field-delimiter"));
         // 获取当前 MappingInfo
         MappingInfo currentMappingInfo = XmlUtil.extractCurrentMappingInfo(dataFilePath ,selfDefinedConfig.getMappingInfoList());
+        // 检验 MappingInfo 中，ColumnMapping 数目是否与数据文件字段数匹配
+        if(!currentMappingInfo.isColumnMatch(values.length)){
+            throw new InterruptedException("配置文件校验失败，配置文件的column-mapping数目与数据文件不匹配！");
+        }
         // 在每一行数据中，rowkey 和 timestamp 都固定不变
         ImmutableBytesWritable rowkey = new ImmutableBytesWritable(Bytes.toBytes(values[XmlUtil.extractRowkeyIndex(currentMappingInfo)]));
         Long ts = 0L;
@@ -110,7 +114,8 @@ class GenericMapper extends Mapper<LongWritable, Text, ImmutableBytesWritable, T
          * 当数据文件路径中不含有 data_date 时，默认使用当前时间
          */
         try {
-            ts = DateUtil.convertStringToUnixTime(dataFilePath,"yyyyMMdd","data_date=(\\d{8})");
+//            ts = DateUtil.convertStringToUnixTime(dataFilePath,"yyyyMMdd","data_date=(\\d{8})");
+            ts = DateUtil.generateUniqTimeStamp(dataFilePath, "yyyyMMdd", "data_date=(\\d{8})");
         } catch (ParseException e) {
             System.exit(-1);    // 异常直接退出
         }
