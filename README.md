@@ -194,6 +194,33 @@
 默认情况下，如果配置文件的输入路径中含有data_date=yyyyMMdd，则会使用该日期作为数据日期；
 如果配置文件的输入路径中不含有日期分区，则会采用当前日期作为数据日期
 </p>
+<p>当在XML中使用以下5个符号 <、>、&、'、" 时，需要进行转义。转义规则如下：</p>
+<table>
+    <tr>
+        <td>特殊字符</td>
+        <td>转义规则</td>
+    </tr>
+    <tr>
+    	<td>&lt;</td>
+    	<td>&amp;lt;</td>
+    </tr>
+    <tr>
+    	<td>&gt;</td>
+    	<td>&amp;gt;</td>
+    </tr>
+    <tr>
+    	<td>&amp;</td>
+    	<td>&amp;amp;</td>
+    </tr>
+    <tr>
+    	<td>&apos;</td>
+    	<td>&amp;apos;</td>
+    </tr>
+    <tr>
+    	<td>&quot;</td>
+    	<td>&amp;quot;</td>
+    </tr>
+</table>
 <hr>
 <h3>命令行调用方式</h3>
 <p>命令行允许携带参数</p>
