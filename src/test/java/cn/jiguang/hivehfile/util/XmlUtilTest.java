@@ -27,12 +27,12 @@ public class XmlUtilTest {
     @Before
     public void setup() throws DocumentException, IOException {
         org.apache.hadoop.conf.Configuration conf = new org.apache.hadoop.conf.Configuration();
-        conf.set("user.defined.parameters","{'inPath':'hdfs://nameservice1/user/hive/warehouse/dmp.db/rt_jid_v2','outPath':'hdfs://nameservice1/tmp/user-profile/CID_JID','partition':'data_date=20170507,data_date=20170508,data_date=20170509,data_date=20170510','hive-column-name':'value','hive-column-type':'string'}' ");;
+        conf.set("user.defined.parameters","{'inPath':'hdfs://nameservice1/user/hive/warehouse/dmp.db/rt_jid_v2','outPath':'hdfs://nameservice1/tmp/user-profile/CID_JID','partition':'data_date=20170507,data_date=20170508,data_date=20170509,data_date=20170510','hive-column-name':'value','hive-column-type':'string'}' ");
         document = saxReader.read("mr-config.xml");
         configuration = XmlUtil.generateConfigurationFromXml(conf,"mr-config.xml");
     }
 
-    @Test
+//    @Test
     public void testExractMapppingInfoList(){
         XmlUtil.extractMappingInfoList(document).get(1).getPartition();
         ArrayList<MappingInfo>  expected = new ArrayList<MappingInfo>();
@@ -80,8 +80,10 @@ public class XmlUtilTest {
         assertEquals("tags:xhqb_tag",htableName.split(":")[0]+":"+htableName.split(":")[1]);
     }
 
-//    @Test
+    @Test
     public void testGetAllInputpath(){
+        System.out.println(configuration.getOutputPath());
+        System.out.println(configuration.getInputPath());
         assertEquals("hdfs://nameservice1/user/hive/warehouse/tmp.db/hfile_rt_career"
                 ,configuration.getAllInputPath());
     }
@@ -129,7 +131,7 @@ public class XmlUtilTest {
         System.out.println(doc.getRootElement().elementText("element"));
     }
 
-    @Test
+//    @Test
     public void testVariableReplacement() throws DocumentException {
         SAXReader reader = new SAXReader();
         Document actual = reader.read(XmlUtilTest.class.getResourceAsStream("/test-config.xml"));

@@ -6,6 +6,7 @@ import cn.jiguang.hivehfile.util.MapUtil;
 import cn.jiguang.hivehfile.util.XmlUtil;
 import org.apache.commons.cli.*;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.KeyValue;
@@ -92,9 +93,11 @@ public class GenericMapReduce implements Tool {
         }
         job.setMapOutputKeyClass(ImmutableBytesWritable.class);
         job.setMapOutputValueClass(KeyValue.class);
+        FileSystem fs = FileSystem.get(configuration);
         for (String p : inputPath.split(",")) {
             Path path = new Path(p);
-            FileInputFormat.addInputPath(job, path);
+            if (fs.exists(path))
+                FileInputFormat.addInputPath(job, path);
         }
         FileOutputFormat.setOutputPath(job, new Path(outputPath));
         Configuration hbaseConf = HBaseConfiguration.create(configuration);

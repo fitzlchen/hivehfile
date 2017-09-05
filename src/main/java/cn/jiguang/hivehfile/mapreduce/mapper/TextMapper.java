@@ -27,6 +27,7 @@ import java.text.ParseException;
 public class TextMapper extends Mapper<LongWritable, Text, ImmutableBytesWritable, KeyValue> {
     private Logger logger = LogManager.getLogger(TextMapper.class);
     private cn.jiguang.hivehfile.Configuration selfDefinedConfig = null;
+    private StringBuffer sb = new StringBuffer();
 
     @Override
     public void setup(Context context) throws IOException {
@@ -46,7 +47,11 @@ public class TextMapper extends Mapper<LongWritable, Text, ImmutableBytesWritabl
         if(!currentMappingInfo.isColumnMatch(values.length)){
             throw new InterruptedException("配置文件校验失败，配置文件的column-mapping数目与数据文件不匹配！");
         }
-        // 在每一行数据中，rowkey 和 timestamp 都固定不变
+//        清空 StringBuffer 并反转 rowkey
+//        sb.delete(0,sb.length());
+//        sb.append(values[XmlUtil.extractRowkeyIndex(currentMappingInfo)]);
+//        ImmutableBytesWritable rowkey = new ImmutableBytesWritable(Bytes.toBytes(sb.reverse().toString()));
+        // 暂时不反转 RowKey
         ImmutableBytesWritable rowkey = new ImmutableBytesWritable(Bytes.toBytes(values[XmlUtil.extractRowkeyIndex(currentMappingInfo)]));
         Long ts = 0L;
             /*

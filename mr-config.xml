@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <config>
     <!-- Global Settings -->
-    <input-path>hdfs://nameservice1/user/hive/warehouse/anti_fraud.db/expand_blacklist_output_r</input-path>
-    <output-path>hdfs://nameservice1/tmp/hfile-output-test</output-path>
+    <input-path>hdfs://nameservice1/user/hive/warehouse/anti_fraud.db/general_feature_nor</input-path>
+    <output-path>hdfs://nameservice1/tmp/panlf/general_feature_nor/20170815_general_feature_BUS_Soft_Communication&amp;Meeting</output-path>
     <htable-name>fraud:blacklist_v2</htable-name>
     <field-delimiter>\u0001</field-delimiter>
     <collection-item-delimiter>,</collection-item-delimiter>
@@ -15,16 +15,7 @@
     <!-- 1 -->
     <mapping-info>
         <partition>
-            data_date=20161231/list=expand,
-            data_date=20161231/list=init,
-            data_date=20170131/list=expand,
-            data_date=20170131/list=init,
-            data_date=20170228/list=expand,
-            data_date=20170228/list=init,
-            data_date=20170331/list=expand,
-            data_date=20170331/list=init,
-            data_date=20170430/list=expand,
-            data_date=20170430/list=init
+            data_date=20170815/feature=BUS_Soft_Communication&amp;Meeting
         </partition>
         <column-mapping>
             <hive-column-name>imei</hive-column-name>
