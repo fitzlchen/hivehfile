@@ -73,16 +73,16 @@
       <artifactId>hadoop-client</artifactId>
       <version>${hadoop.version}</version>
     </dependency>
-    <dependency>
-      <groupId>org.apache.hadoop</groupId>
-      <artifactId>hadoop-core</artifactId>
-      <version>${hadoop.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.hadoop</groupId>
-      <artifactId>hadoop-tools</artifactId>
-      <version>${hadoop.version}</version>
-    </dependency>
+    <!--<dependency>-->
+      <!--<groupId>org.apache.hadoop</groupId>-->
+      <!--<artifactId>hadoop-core</artifactId>-->
+      <!--<version>${hadoop.version}</version>-->
+    <!--</dependency>-->
+    <!--<dependency>-->
+      <!--<groupId>org.apache.hadoop</groupId>-->
+      <!--<artifactId>hadoop-tools</artifactId>-->
+      <!--<version>${hadoop.version}</version>-->
+    <!--</dependency>-->
     <dependency>
       <groupId>org.apache.parquet</groupId>
       <artifactId>parquet-common</artifactId>
