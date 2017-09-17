@@ -1,37 +1,28 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <config>
     <!-- Global Settings -->
-    <input-path>hdfs://nameservice1/user/hive/warehouse/anti_fraud.db/general_feature_nor</input-path>
-    <output-path>hdfs://nameservice1/tmp/panlf/general_feature_nor/20170815_general_feature_BUS_Soft_Communication&amp;Meeting</output-path>
-    <htable-name>fraud:blacklist_v2</htable-name>
+    <input-path>hdfs://nameservice1/user/hive/warehouse/dmp.db/rt_career</input-path>
+    <output-path>hdfs://nameservice1/tmp/chenlin/out</output-path>
+    <htable-name>bt_iaudience</htable-name>
     <field-delimiter>\u0001</field-delimiter>
     <collection-item-delimiter>,</collection-item-delimiter>
-    <hbase.zookeeper.quorum>192.168.254.67,192.168.254.68,192.168.255.66</hbase.zookeeper.quorum>
+    <hbase.zookeeper.quorum>192.168.254.107,192.168.254.96,192.168.254.86</hbase.zookeeper.quorum>
     <hbase.zookeeper.property.clientPort>2181</hbase.zookeeper.property.clientPort>
     <hbase.zookeeper.property.maxClientCnxns>400</hbase.zookeeper.property.maxClientCnxns>
     <hbase.znode.parent>/hbase</hbase.znode.parent>
 
     <!-- Local Settings -->
-    <!-- 1 -->
     <mapping-info>
-        <partition>
-            data_date=20170815/feature=BUS_Soft_Communication&amp;Meeting
-        </partition>
         <column-mapping>
             <hive-column-name>imei</hive-column-name>
             <hive-column-type>string</hive-column-type>
             <rowkey>true</rowkey>
         </column-mapping>
         <column-mapping>
-            <hive-column-name>cnt</hive-column-name>
-            <hive-column-type>bigint</hive-column-type>
-        </column-mapping>
-        <column-mapping>
-            <hive-column-name>prob</hive-column-name>
-            <hive-column-type>double</hive-column-type>
+            <hive-column-name>job</hive-column-name>
+            <hive-column-type>string</hive-column-type>
             <hbase-column-family>A</hbase-column-family>
-            <hbase-column-qualifier>RI_CIRCLE_PROB</hbase-column-qualifier>
+            <hbase-column-qualifier>SOM_OCM_CAREER</hbase-column-qualifier>
         </column-mapping>
     </mapping-info>
-
 </config>

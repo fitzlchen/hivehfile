@@ -4,6 +4,7 @@ import cn.jiguang.hivehfile.model.MappingInfo;
 import cn.jiguang.hivehfile.util.DateUtil;
 import cn.jiguang.hivehfile.util.PrintUtil;
 import cn.jiguang.hivehfile.util.XmlUtil;
+import com.google.common.base.Strings;
 import org.apache.hadoop.hbase.KeyValue;
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
 import org.apache.hadoop.hbase.util.Bytes;
@@ -27,12 +28,13 @@ import java.text.ParseException;
 public class TextMapper extends Mapper<LongWritable, Text, ImmutableBytesWritable, KeyValue> {
     private Logger logger = LogManager.getLogger(TextMapper.class);
     private cn.jiguang.hivehfile.Configuration selfDefinedConfig = null;
-    private StringBuffer sb = new StringBuffer();
+    private String unique = null;
 
     @Override
     public void setup(Context context) throws IOException {
         // 读取HDFS配置文件，并将其封装成对象
         selfDefinedConfig = XmlUtil.generateConfigurationFromXml(context.getConfiguration(), context.getConfiguration().get("config.file.path"));
+        unique = context.getConfiguration().get("user.defined.parameter.unique");
     }
 
     @Override
@@ -47,11 +49,11 @@ public class TextMapper extends Mapper<LongWritable, Text, ImmutableBytesWritabl
         if(!currentMappingInfo.isColumnMatch(values.length)){
             throw new InterruptedException("配置文件校验失败，配置文件的column-mapping数目与数据文件不匹配！");
         }
-//        清空 StringBuffer 并反转 rowkey
-//        sb.delete(0,sb.length());
-//        sb.append(values[XmlUtil.extractRowkeyIndex(currentMappingInfo)]);
-//        ImmutableBytesWritable rowkey = new ImmutableBytesWritable(Bytes.toBytes(sb.reverse().toString()));
-        // 暂时不反转 RowKey
+
+        if (Strings.isNullOrEmpty(values[XmlUtil.extractRowkeyIndex(currentMappingInfo)])){
+            logger.error("异常数据，ROWKEY 为空");
+            return;
+        }
         ImmutableBytesWritable rowkey = new ImmutableBytesWritable(Bytes.toBytes(values[XmlUtil.extractRowkeyIndex(currentMappingInfo)]));
         Long ts = 0L;
             /*
@@ -59,7 +61,10 @@ public class TextMapper extends Mapper<LongWritable, Text, ImmutableBytesWritabl
              * 当数据文件路径中不含有 data_date 时，默认使用当前时间
              */
         try {
-            ts = DateUtil.generateUniqTimeStamp(dataFilePath, "yyyyMMdd", "data_date=(\\d{8})");
+            if ("true".equalsIgnoreCase(unique))
+                ts = DateUtil.generateUniqTimeStamp(dataFilePath, "yyyyMMdd", "data_date=(\\d{8})");
+            else
+                ts = DateUtil.convertStringToUnixTime(dataFilePath,"yyyyMMdd", "data_date=(\\d{8})");
         } catch (ParseException e) {
             logger.fatal("无法解析数据日期，请检查InputPath和Partition的填写！");
             System.exit(-1);    // 异常直接退出

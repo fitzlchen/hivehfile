@@ -80,7 +80,7 @@ public class XmlUtilTest {
         assertEquals("tags:xhqb_tag",htableName.split(":")[0]+":"+htableName.split(":")[1]);
     }
 
-    @Test
+//    @Test
     public void testGetAllInputpath(){
         System.out.println(configuration.getOutputPath());
         System.out.println(configuration.getInputPath());

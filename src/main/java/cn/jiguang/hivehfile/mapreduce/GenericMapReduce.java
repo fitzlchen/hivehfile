@@ -6,6 +6,7 @@ import cn.jiguang.hivehfile.util.MapUtil;
 import cn.jiguang.hivehfile.util.XmlUtil;
 import org.apache.commons.cli.*;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hbase.HBaseConfiguration;
@@ -30,9 +31,8 @@ import org.apache.parquet.avro.AvroParquetInputFormat;
  * Created by jiguang
  * Date: 2017/4/25
  */
-public class GenericMapReduce implements Tool {
+public class GenericMapReduce extends Configured implements Tool {
     static Logger logger = LogManager.getLogger(GenericMapReduce.class);
-    static Configuration configuration = null;
     private String configFilePath = null;
 
     /**
@@ -50,12 +50,14 @@ public class GenericMapReduce implements Tool {
         options.addOption("config", true, "配置文件的HDFS路径");
         options.addOption("dict", true, "字典参数");
         options.addOption("format", true, "数据文件格式");
+        options.addOption("unique", true, "键值对的时间戳是否唯一");
         CommandLine cmd = new BasicParser().parse(options, args);
         if (!cmd.hasOption("config")) {
             logger.fatal("缺少配置文件路径，请检查传递的参数！");
             System.exit(-1);
         }
         configFilePath = cmd.getOptionValue("config");
+        Configuration configuration = getConf();
         if (cmd.hasOption("dict")) {
             configuration.set("user.defined.parameters", cmd.getOptionValue("dict"));
             logger.info("接收到的字典字符串：" + cmd.getOptionValue("dict"));
@@ -70,6 +72,11 @@ public class GenericMapReduce implements Tool {
         String fileFormat = null;
         if (cmd.hasOption("format")) {
             fileFormat = cmd.getOptionValue("format");
+        }
+        // 解析unique命令行参数
+        if (cmd.hasOption("unique")) {
+            configuration.set("user.defined.parameter.unique", cmd.getOptionValue("unique"));
+            logger.info("是否生成唯一的键值对时间戳： " + cmd.getOptionValue("unique"));
         }
         cn.jiguang.hivehfile.Configuration selfDefinedConfig = XmlUtil.generateConfigurationFromXml(configuration, configFilePath);
         // 将 InputPath 与所有 partition 拼接
@@ -114,13 +121,5 @@ public class GenericMapReduce implements Tool {
             logger.info("Success, input:" + inputPath + ", output:" + outputPath);
             return 0;
         }
-    }
-
-    public void setConf(Configuration config) {
-        configuration = config;
-    }
-
-    public Configuration getConf() {
-        return configuration;
     }
 }
