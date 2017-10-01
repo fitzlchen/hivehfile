@@ -4,6 +4,7 @@ import cn.jiguang.hivehfile.model.MappingInfo;
 import cn.jiguang.hivehfile.util.DateUtil;
 import cn.jiguang.hivehfile.util.PrintUtil;
 import cn.jiguang.hivehfile.util.XmlUtil;
+import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import org.apache.hadoop.hbase.KeyValue;
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
@@ -47,7 +48,7 @@ public class TextMapper extends Mapper<LongWritable, Text, ImmutableBytesWritabl
         MappingInfo currentMappingInfo = XmlUtil.extractCurrentMappingInfo(dataFilePath, selfDefinedConfig.getMappingInfoList());
         // 检验 MappingInfo 中，ColumnMapping 数目是否与数据文件字段数匹配
         if(!currentMappingInfo.isColumnMatch(values.length)){
-            throw new InterruptedException("配置文件校验失败，配置文件的column-mapping数目与数据文件不匹配！");
+            throw new InterruptedException("配置文件校验失败，配置文件的column-mapping数目与数据文件不匹配！异常内容：" + inputString);
         }
 
         if (Strings.isNullOrEmpty(values[XmlUtil.extractRowkeyIndex(currentMappingInfo)])){

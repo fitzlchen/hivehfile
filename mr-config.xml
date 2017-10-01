@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <config>
     <!-- Global Settings -->
-    <input-path>hdfs://nameservice1/user/hive/warehouse/dmp.db/rt_career</input-path>
-    <output-path>hdfs://nameservice1/tmp/chenlin/out</output-path>
+    <input-path>hdfs://nameservice1/user/hive/warehouse/dmp.db/rt_device_prop</input-path>
+    <output-path>/tmp</output-path>
     <htable-name>bt_iaudience</htable-name>
     <field-delimiter>\u0001</field-delimiter>
     <collection-item-delimiter>,</collection-item-delimiter>
-    <hbase.zookeeper.quorum>192.168.254.107,192.168.254.96,192.168.254.86</hbase.zookeeper.quorum>
+    <hbase.zookeeper.quorum>192.168.254.86,192.168.254.96,192.168.254.107</hbase.zookeeper.quorum>
     <hbase.zookeeper.property.clientPort>2181</hbase.zookeeper.property.clientPort>
     <hbase.zookeeper.property.maxClientCnxns>400</hbase.zookeeper.property.maxClientCnxns>
     <hbase.znode.parent>/hbase</hbase.znode.parent>
@@ -19,10 +19,121 @@
             <rowkey>true</rowkey>
         </column-mapping>
         <column-mapping>
-            <hive-column-name>job</hive-column-name>
+            <hive-column-name>model</hive-column-name>
             <hive-column-type>string</hive-column-type>
             <hbase-column-family>A</hbase-column-family>
-            <hbase-column-qualifier>SOM_OCM_CAREER</hbase-column-qualifier>
+            <hbase-column-qualifier>CID_MODEL</hbase-column-qualifier>
+        </column-mapping>
+        <column-mapping>
+            <hive-column-name>os_version</hive-column-name>
+            <hive-column-type>string</hive-column-type>
+        </column-mapping>
+        <column-mapping>
+            <hive-column-name>type</hive-column-name>
+            <hive-column-type>string</hive-column-type>
+            <hbase-column-family>A</hbase-column-family>
+            <hbase-column-qualifier>CPL_DVM_TYPE</hbase-column-qualifier>
+        </column-mapping>
+        <column-mapping>
+            <hive-column-name>brand</hive-column-name>
+            <hive-column-type>string</hive-column-type>
+            <hbase-column-family>A</hbase-column-family>
+            <hbase-column-qualifier>CPL_DVM_BRAD</hbase-column-qualifier>
+        </column-mapping>
+        <column-mapping>
+            <hive-column-name>subbrand</hive-column-name>
+            <hive-column-type>string</hive-column-type>
+        </column-mapping>
+        <column-mapping>
+            <hive-column-name>exposure_date</hive-column-name>
+            <hive-column-type>string</hive-column-type>
+            <hbase-column-family>A</hbase-column-family>
+            <hbase-column-qualifier>CPL_DVM_TIME</hbase-column-qualifier>
+        </column-mapping>
+        <column-mapping>
+            <hive-column-name>platform</hive-column-name>
+            <hive-column-type>string</hive-column-type>
+            <hbase-column-family>A</hbase-column-family>
+            <hbase-column-qualifier>CPL_DVM_OS</hbase-column-qualifier>
+        </column-mapping>
+        <column-mapping>
+            <hive-column-name>price</hive-column-name>
+            <hive-column-type>string</hive-column-type>
+            <hbase-column-family>A</hbase-column-family>
+            <hbase-column-qualifier>CPL_DVM_PUPR</hbase-column-qualifier>
+        </column-mapping>
+        <column-mapping>
+            <hive-column-name>phone_size</hive-column-name>
+            <hive-column-type>string</hive-column-type>
+        </column-mapping>
+        <column-mapping>
+            <hive-column-name>sc_resolution</hive-column-name>
+            <hive-column-type>string</hive-column-type>
+            <hbase-column-family>A</hbase-column-family>
+            <hbase-column-qualifier>CPL_DVM_RESO</hbase-column-qualifier>
+        </column-mapping>
+        <column-mapping>
+            <hive-column-name>sc_size</hive-column-name>
+            <hive-column-type>string</hive-column-type>
+            <hbase-column-family>A</hbase-column-family>
+            <hbase-column-qualifier>CPL_DVM_SCSIZE</hbase-column-qualifier>
+        </column-mapping>
+        <column-mapping>
+            <hive-column-name>cpu</hive-column-name>
+            <hive-column-type>string</hive-column-type>
+        </column-mapping>
+        <column-mapping>
+            <hive-column-name>cpu_cnt</hive-column-name>
+            <hive-column-type>string</hive-column-type>
+        </column-mapping>
+        <column-mapping>
+            <hive-column-name>cpuhz</hive-column-name>
+            <hive-column-type>string</hive-column-type>
+        </column-mapping>
+        <column-mapping>
+            <hive-column-name>ram</hive-column-name>
+            <hive-column-type>string</hive-column-type>
+        </column-mapping>
+        <column-mapping>
+            <hive-column-name>batt</hive-column-name>
+            <hive-column-type>string</hive-column-type>
+        </column-mapping>
+        <column-mapping>
+            <hive-column-name>bk_resolution</hive-column-name>
+            <hive-column-type>string</hive-column-type>
+        </column-mapping>
+        <column-mapping>
+            <hive-column-name>fr_resolution</hive-column-name>
+            <hive-column-type>string</hive-column-type>
+        </column-mapping>
+        <column-mapping>
+            <hive-column-name>gyro</hive-column-name>
+            <hive-column-type>string</hive-column-type>
+        </column-mapping>
+        <column-mapping>
+            <hive-column-name>nfc</hive-column-name>
+            <hive-column-type>string</hive-column-type>
+        </column-mapping>
+        <column-mapping>
+            <hive-column-name>fingerprint</hive-column-name>
+            <hive-column-type>string</hive-column-type>
+        </column-mapping>
+        <column-mapping>
+            <hive-column-name>ps_screen</hive-column-name>
+            <hive-column-type>string</hive-column-type>
+        </column-mapping>
+        <column-mapping>
+            <hive-column-name>fast_charge</hive-column-name>
+            <hive-column-type>string</hive-column-type>
+        </column-mapping>
+        <column-mapping>
+            <hive-column-name>network</hive-column-name>
+            <hive-column-type>string</hive-column-type>
+        </column-mapping>
+        <column-mapping>
+            <hive-column-name>code</hive-column-name>
+            <hive-column-type>string</hive-column-type>
         </column-mapping>
     </mapping-info>
 </config>
+

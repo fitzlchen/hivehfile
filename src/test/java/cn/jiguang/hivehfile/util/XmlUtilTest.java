@@ -32,9 +32,9 @@ public class XmlUtilTest {
         configuration = XmlUtil.generateConfigurationFromXml(conf,"mr-config.xml");
     }
 
-//    @Test
+    @Test
     public void testExractMapppingInfoList(){
-        XmlUtil.extractMappingInfoList(document).get(1).getPartition();
+        ArrayList<MappingInfo> arr = XmlUtil.extractMappingInfoList(document);
         ArrayList<MappingInfo>  expected = new ArrayList<MappingInfo>();
         MappingInfo mappingInfo1 = new MappingInfo();
         MappingInfo mappingInfo2 = new MappingInfo();
