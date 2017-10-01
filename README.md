@@ -227,9 +227,10 @@
 <p>-D mapreduce.job.queuename 是<b>必填参数</b>，用于指定任务提交的资源池</p>
 <p>-config 是<b>必填参数</b>，用于指定配置文件的HDFS路径</p>
 <p>-dict 是<b>选填参数</b>，用于传递一个变量字典，以替换配置文件中对应的占位符</p>
-<p>-format 是<b>选填参数</b>，用于指定数据文件的格式。如果数据文件的格式为txt，则不需要填写该参数；如果数据文件的格式为parquet，则填写parquet</p>
+<p>-format 是<b>选填参数</b>，用于指定数据文件的格式。如果数据文件的格式为txt，则不需要填写该参数；如果数据文件的格式为parquet，则填写-format parquet</p>
+<p>-unique 是<b>选填参数</b>，用于指定是否生成唯一的键值对时间戳。如果需要为键值对生成唯一的时间戳，则在命令行中填写 -unique true</p>
 <pre>
-yarn jar &lt;jar.name&gt; JobExecutor -D mapreduce.job.queuename=&lt;queuename&gt; -config &lt;config-file.hdfs.path&gt; [-dict &lt;parameter.dict&gt;] [-format &lt;data.format&gt;]
+yarn jar &lt;jar.name&gt; JobExecutor -D mapreduce.job.queuename=&lt;queuename&gt; -config &lt;config-file.hdfs.path&gt; [-dict &lt;parameter.dict&gt;] [-format &lt;data.format&gt;] [-unique &lt;true or false&gt;]
 
 e.g.
 #sample 1
@@ -247,6 +248,14 @@ yarn jar hivehfile.jar JobExecutor
 -config hdfs://nameservice1/tmp/hfile-config/hfile_rt_career-with-params.xml 
 -dict "{'input-path':'hdfs://nameservice1/user/hive/warehouse/tmp.db/hfile_rt_career'}"
 -format parquet
+
+#sample 4
+yarn jar hivehfile.jar JobExecutor  
+-D mapreduce.job.queuename=root.etl
+-config hdfs://nameservice1/tmp/hfile-config/hfile_rt_career-with-params.xml 
+-dict "{'input-path':'hdfs://nameservice1/user/hive/warehouse/tmp.db/hfile_rt_career'}"
+-format parquet
+-unique true
 </pre>
 
 
