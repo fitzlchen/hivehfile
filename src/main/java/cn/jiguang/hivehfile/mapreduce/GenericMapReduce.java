@@ -88,6 +88,7 @@ public class GenericMapReduce extends Configured implements Tool {
         configuration.set("hbase.zookeeper.property.maxClientCnxns", selfDefinedConfig.getHbaseZookeeperPropertyMaxClientCnxns());
         configuration.set("zookeeper.znode.parent", selfDefinedConfig.getHbaseZnodeParent());
         configuration.set("config.file.path", configFilePath);
+        configuration.setLong("hbase.hregion.max.filesize",107374182400L);
         Job job = Job.getInstance(configuration);
         job.setJarByClass(GenericMapReduce.class);
         // 根据指定的文件类型，使用不同的 Mapper
