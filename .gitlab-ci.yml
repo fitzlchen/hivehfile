@@ -6,8 +6,6 @@ nj:
   script:
       - mvn clean package -Dmaven.test.skip
       - echo 'deploy nj hivehfile.jar finish'
-  tags:
-      - test
   when: manual
   only:
     - master
