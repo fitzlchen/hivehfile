@@ -18,6 +18,7 @@ import org.apache.log4j.Logger;
 
 import java.io.IOException;
 import java.text.ParseException;
+import java.util.HashMap;
 
 /**
  * Created by: fitz
@@ -47,11 +48,11 @@ public class TextMapper extends Mapper<LongWritable, Text, ImmutableBytesWritabl
         // 获取当前 MappingInfo
         MappingInfo currentMappingInfo = XmlUtil.extractCurrentMappingInfo(dataFilePath, selfDefinedConfig.getMappingInfoList());
         // 检验 MappingInfo 中，ColumnMapping 数目是否与数据文件字段数匹配
-        if(!currentMappingInfo.isColumnMatch(values.length)){
+        if (!currentMappingInfo.isColumnMatch(values.length)) {
             throw new InterruptedException("配置文件校验失败，配置文件的column-mapping数目与数据文件不匹配！异常内容：" + inputString);
         }
 
-        if (Strings.isNullOrEmpty(values[XmlUtil.extractRowkeyIndex(currentMappingInfo)])){
+        if (Strings.isNullOrEmpty(values[XmlUtil.extractRowkeyIndex(currentMappingInfo)])) {
             logger.error("异常数据，ROWKEY 为空");
             return;
         }
@@ -65,11 +66,14 @@ public class TextMapper extends Mapper<LongWritable, Text, ImmutableBytesWritabl
             if ("true".equalsIgnoreCase(unique))
                 ts = DateUtil.generateUniqTimeStamp(dataFilePath, "yyyyMMdd", "data_date=(\\d{8})");
             else
-                ts = DateUtil.convertStringToUnixTime(dataFilePath,"yyyyMMdd", "data_date=(\\d{8})");
+                ts = DateUtil.convertStringToUnixTime(dataFilePath, "yyyyMMdd", "data_date=(\\d{8})");
         } catch (ParseException e) {
             logger.fatal("无法解析数据日期，请检查InputPath和Partition的填写！");
             System.exit(-1);    // 异常直接退出
         }
+
+        HashMap<String, Integer> dynamicFillColumnRela = null;
+
             /* 开始装配HFile
              * 所需参数：
              * RowKey
@@ -80,19 +84,39 @@ public class TextMapper extends Mapper<LongWritable, Text, ImmutableBytesWritabl
              */
         for (int i = 0; i < values.length; i++) {
             KeyValue kv = null;
+            String columnFamily = null;
+            String columnQualifier = null;
+            // 只遍历非 Rowkey 且 需要写入 HBase 的字段
             if (i != XmlUtil.extractRowkeyIndex(currentMappingInfo)
                     && currentMappingInfo.getColumnMappingList().get(i).get("hbase-column-family") != null
-                    && currentMappingInfo.getColumnMappingList().get(i).get("hbase-column-qualifier") != null
-                    ) {  // 只遍历非 Rowkey 且 需要写入 HBase 的字段
-                try {
-                    String transformedValue = PrintUtil.escapeConnotation(values[i]);
-                    // 字段取值可能为空，将所有空值 \\N 转换为空串
-                    if ("\\N".equals(transformedValue)) {
-                        transformedValue = "";
+                    && currentMappingInfo.getColumnMappingList().get(i).get("hbase-column-qualifier") != null) {
+                String transformedValue = PrintUtil.escapeConnotation(values[i]);
+                // 字段取值可能为空，将所有空值 \\N 转换为空串
+                if ("\\N".equals(transformedValue)) {
+                    transformedValue = "";
+                }
+
+                // 判断是否使用了字段动态填充功能
+                if (currentMappingInfo.isDynamicFill()) {
+                    dynamicFillColumnRela = currentMappingInfo.getDynamicFillColumnRela();
+                    if (currentMappingInfo.getColumnMappingList().get(i).get("hbase-column-family").indexOf("#") != -1) {
+                        columnFamily = values[dynamicFillColumnRela.get(currentMappingInfo.getColumnMappingList().get(i).get("hbase-column-family").replace("#",""))];
+                    } else {
+                        columnFamily = currentMappingInfo.getColumnMappingList().get(i).get("hbase-column-family");
                     }
+                    if (currentMappingInfo.getColumnMappingList().get(i).get("hbase-column-qualifier").indexOf("#") != -1) {
+                        columnQualifier = values[dynamicFillColumnRela.get(currentMappingInfo.getColumnMappingList().get(i).get("hbase-column-qualifier").replace("#",""))];
+                    } else {
+                        columnQualifier = currentMappingInfo.getColumnMappingList().get(i).get("hbase-column-qualifier");
+                    }
+                } else {
+                    columnFamily = currentMappingInfo.getColumnMappingList().get(i).get("hbase-column-family");
+                    columnQualifier = currentMappingInfo.getColumnMappingList().get(i).get("hbase-column-qualifier");
+                }
+                try {
                     kv = new KeyValue(Bytes.toBytes(values[XmlUtil.extractRowkeyIndex(currentMappingInfo)]),
-                            Bytes.toBytes(currentMappingInfo.getColumnMappingList().get(i).get("hbase-column-family")),
-                            Bytes.toBytes(currentMappingInfo.getColumnMappingList().get(i).get("hbase-column-qualifier")),
+                            Bytes.toBytes(columnFamily),
+                            Bytes.toBytes(columnQualifier),
                             ts,
                             Bytes.toBytes(transformedValue)
                     );

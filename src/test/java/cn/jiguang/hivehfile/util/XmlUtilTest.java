@@ -1,5 +1,7 @@
 package cn.jiguang.hivehfile.util;
 
+import avro.shaded.com.google.common.collect.ImmutableMap;
+import avro.shaded.com.google.common.collect.Maps;
 import cn.jiguang.hivehfile.Configuration;
 import cn.jiguang.hivehfile.model.MappingInfo;
 import org.dom4j.Document;
@@ -32,7 +34,7 @@ public class XmlUtilTest {
         configuration = XmlUtil.generateConfigurationFromXml(conf,"mr-config.xml");
     }
 
-    @Test
+//    @Test
     public void testExractMapppingInfoList(){
         ArrayList<MappingInfo> arr = XmlUtil.extractMappingInfoList(document);
         ArrayList<MappingInfo>  expected = new ArrayList<MappingInfo>();
@@ -137,6 +139,13 @@ public class XmlUtilTest {
         Document actual = reader.read(XmlUtilTest.class.getResourceAsStream("/test-config.xml"));
         actual = XmlUtil.variableReplacement(actual,"{'inPath':'hdfs://nameservice1/user/hive/warehouse/dmp.db/rt_jid_v2','outPath':'hdfs://nameservice1/tmp/user-profile/CID_JID','partition':'data_date=20170507,data_date=20170508,data_date=20170509,data_date=20170510','hive-column-name':'value','hive-column-type':'string'}'");
         assertEquals(document, actual);
+    }
+
+    @Test
+    public void testExtractDynamicColumn() throws IOException {
+        ImmutableMap<String,Integer> expected = ImmutableMap.of("feature",2,"family",3);
+        MappingInfo mappingInfo = configuration.getMappingInfoList().get(0);
+        assertEquals(expected,mappingInfo.getDynamicFillColumnRela());
     }
 
 }
