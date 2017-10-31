@@ -188,13 +188,59 @@
     &lt;/mapping-info&gt;
 &lt;/config&gt;
 </pre>
-<strong>备注</strong>
-<p>配置文件未涉及HBase字段时间戳的填写</p>
+<strong>HBase 列族和列名自动填充的配置文件</strong>
+<pre>
+&lt;?xml version="1.0" encoding="UTF-8" ?&gt;
+&lt;config&gt;
+	&lt;!-- Global Settings --&gt;
+	&lt;input-path&gt;hdfs://nameservice1/tmp/test-hfile-inpu&lt;input-path&gt;
+    &lt;output-path&gt;hdfs://nameservice1/tmp/test-hfile-output&lt;/output-path&gt;
+    &lt;htable-name&gt;fraud_feature_nor&lt;/htable-name&gt;
+    &lt;field-delimiter&gt;\u0001&lt;/field-delimiter&gt;
+    &lt;collection-item-delimiter&gt;,&lt;/collection-item-delimiter&gt;
+    &lt;hbase.zookeeper.quorum&gt;192.168.254.71,192.168.254.72,192.168.254.73&lt;/hbase.zookeeper.quorum&gt;
+    &lt;hbase.zookeeper.property.clientPort&gt;2181&lt;/hbase.zookeeper.property.clientPort&gt;
+    &lt;hbase.zookeeper.property.maxClientCnxns&gt;400&lt;/hbase.zookeeper.property.maxClientCnxns&gt;
+    &lt;hbase.znode.parent&gt;/hbase&lt;/hbase.znode.parent&gt;
+
+	&lt;!-- Local Settings --&gt;
+	&lt;mapping-info&gt;
+		&lt;partition&gt;
+			data_date=20170423,
+			data_date=20170424,
+			data_date=20170425
+		&lt;/partition&gt;
+        &lt;column-mapping&gt;
+            &lt;hive-column-name&gt;imei&lt;/hive-column-name&gt;
+            &lt;hive-column-type&gt;string&lt;/hive-column-type&gt;
+            &lt;rowkey&gt;true&lt;/rowkey&gt;
+        &lt;/column-mapping&gt;
+        &lt;column-mapping&gt;
+            &lt;hive-column-name&gt;value&lt;/hive-column-name&gt;
+            &lt;hive-column-type&gt;string&lt;/hive-column-type&gt;
+            &lt;hbase-column-family&gt;A&lt;/hbase-column-family&gt;
+            &lt;hbase-column-qualifier&gt;<b>#feature#</b>&lt;/hbase-column-qualifier&gt;
+        &lt;/column-mapping&gt;
+        &lt;column-mapping&gt;
+            &lt;hive-column-name&gt;feature&lt;/hive-column-name&gt;
+            &lt;hive-column-type&gt;string&lt;/hive-column-type&gt;
+        &lt;/column-mapping&gt;        
+    &lt;/mapping-info&gt;
+&lt;/config&gt;
+</pre>
+<h4>备注</h4>
+<h5>配置文件未涉及HBase字段时间戳的填写</h5>
 <p>
 默认情况下，如果配置文件的输入路径中含有data_date=yyyyMMdd，则会使用该日期作为数据日期；
 如果配置文件的输入路径中不含有日期分区，则会采用当前日期作为数据日期
 </p>
-<p>当在XML中使用以下5个符号 &lt;、&gt;、&amp;、&apos;、&quot; 时，需要进行转义。转义规则如下：</p>
+<h5>HBase列族名或列名自动填充的功能</h5>
+<p>将&lt;hbase-column-family&gt;或&lt;hbase-column-qualifier&gt;标签内容替换为#&lt;填充的字段名&gt;#</p>
+<p>e.g.</p>
+<p>
+需要使用Hive的feature字段值作为HBase的列族名的填写方式：&lt;hbase-column-qualifier&gt;#feature#&lt;/hbase-column-qualifier&gt;
+</p>
+<h5>当在XML中使用以下5个符号 &lt;、&gt;、&amp;、&apos;、&quot; 时，需要进行转义。转义规则如下：</h5>
 <table>
     <tr>
         <td>特殊字符</td>
