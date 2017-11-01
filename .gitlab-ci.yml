@@ -5,7 +5,8 @@ nj:
   stage: deploy
   script:
       - mvn clean package -Dmaven.test.skip
-      - echo 'deploy nj hivehfile.jar finish'
+      - scp /home/chenlin/builds/4f35e31a/0/chenlin/jiguang-hbase-hfile/target/hivehfile-1.0-SNAPSHOT-jar-with-dependencies.jar chenlin@172.16.102.133:/home/chenlin/tmp/hivehfile.jar
+      - echo '[NJ] hivehfile.jar has been compiled successfully && published to target server'
   when: manual
   only:
     - master
