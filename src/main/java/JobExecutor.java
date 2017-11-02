@@ -14,11 +14,15 @@ public class JobExecutor {
 
     public static void main(String[] args){
         Configuration conf = new Configuration();
+        int code = 0;   // MapReduce 返回码
         try{
-           ToolRunner.run(conf,new GenericMapReduce(),args);
+           code = ToolRunner.run(conf,new GenericMapReduce(),args);
         }catch (Exception e){
             logger.error(e.getMessage());
             System.exit(-1);
+        }
+        if (code != 0){
+           System.exit(-1);
         }
     }
 }
