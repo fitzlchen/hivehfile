@@ -34,6 +34,7 @@ import org.apache.parquet.avro.AvroParquetInputFormat;
 public class GenericMapReduce extends Configured implements Tool {
     static Logger logger = LogManager.getLogger(GenericMapReduce.class);
     private String configFilePath = null;
+    private Job job = null;
 
     /**
      * 运行通用MR的入口
@@ -51,6 +52,7 @@ public class GenericMapReduce extends Configured implements Tool {
         options.addOption("dict", true, "字典参数");
         options.addOption("format", true, "数据文件格式");
         options.addOption("unique", true, "键值对的时间戳是否唯一");
+        options.addOption("name",true,"作业名称");
         CommandLine cmd = new BasicParser().parse(options, args);
         if (!cmd.hasOption("config")) {
             logger.fatal("缺少配置文件路径，请检查传递的参数！");
@@ -89,7 +91,11 @@ public class GenericMapReduce extends Configured implements Tool {
         configuration.set("zookeeper.znode.parent", selfDefinedConfig.getHbaseZnodeParent());
         configuration.set("config.file.path", configFilePath);
         configuration.setLong("hbase.hregion.max.filesize",307374182400L);
-        Job job = Job.getInstance(configuration);
+        if (cmd.hasOption("name")){
+            job = Job.getInstance(configuration, cmd.getOptionValue("name"));
+        } else {
+            job = Job.getInstance(configuration);
+        }
         job.setJarByClass(GenericMapReduce.class);
         // 根据指定的文件类型，使用不同的 Mapper
         if (fileFormat != null && "parquet".equalsIgnoreCase(fileFormat)) {
