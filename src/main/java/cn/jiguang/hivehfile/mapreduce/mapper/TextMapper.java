@@ -96,6 +96,7 @@ public class TextMapper extends Mapper<LongWritable, Text, ImmutableBytesWritabl
                     transformedValue = "";
                 }
 
+                try {
                 // 判断是否使用了字段动态填充功能
                 if (currentMappingInfo.isDynamicFill()) {
                     dynamicFillColumnRela = currentMappingInfo.getDynamicFillColumnRela();
@@ -113,7 +114,7 @@ public class TextMapper extends Mapper<LongWritable, Text, ImmutableBytesWritabl
                     columnFamily = currentMappingInfo.getColumnMappingList().get(i).get("hbase-column-family");
                     columnQualifier = currentMappingInfo.getColumnMappingList().get(i).get("hbase-column-qualifier");
                 }
-                try {
+//                try {
                     kv = new KeyValue(Bytes.toBytes(values[XmlUtil.extractRowkeyIndex(currentMappingInfo)]),
                             Bytes.toBytes(columnFamily),
                             Bytes.toBytes(columnQualifier),
