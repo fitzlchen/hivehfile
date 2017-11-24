@@ -6,6 +6,7 @@ import cn.jiguang.hivehfile.util.PrintUtil;
 import cn.jiguang.hivehfile.util.XmlUtil;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 import org.apache.hadoop.hbase.KeyValue;
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
 import org.apache.hadoop.hbase.util.Bytes;
@@ -18,6 +19,7 @@ import org.apache.log4j.Logger;
 
 import java.io.IOException;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
@@ -44,19 +46,28 @@ public class TextMapper extends Mapper<LongWritable, Text, ImmutableBytesWritabl
         String inputString = value.toString();
         // 获取数据文件的路径
         String dataFilePath = ((FileSplit) context.getInputSplit()).getPath().getParent().toString();
-        String[] values = inputString.split(selfDefinedConfig.getDelimiterCollection().get("field-delimiter"));
+//        String[] values = inputString.split(selfDefinedConfig.getDelimiterCollection().get("field-delimiter"));
+        ArrayList<String> values = Lists.newArrayList(Splitter.on(selfDefinedConfig.getDelimiterCollection().get("field-delimiter")).split(inputString));
         // 获取当前 MappingInfo
         MappingInfo currentMappingInfo = XmlUtil.extractCurrentMappingInfo(dataFilePath, selfDefinedConfig.getMappingInfoList());
         // 检验 MappingInfo 中，ColumnMapping 数目是否与数据文件字段数匹配
-        if (!currentMappingInfo.isColumnMatch(values.length)) {
+        if (!currentMappingInfo.isColumnMatch(values.size())) {
             throw new InterruptedException("配置文件校验失败，配置文件的column-mapping数目与数据文件不匹配！异常内容：" + inputString);
         }
-
-        if (Strings.isNullOrEmpty(values[XmlUtil.extractRowkeyIndex(currentMappingInfo)])) {
+//        if (!currentMappingInfo.isColumnMatch(values.length)) {
+//            throw new InterruptedException("配置文件校验失败，配置文件的column-mapping数目与数据文件不匹配！异常内容：" + inputString);
+//        }
+        if (Strings.isNullOrEmpty(values.get(XmlUtil.extractRowkeyIndex(currentMappingInfo)))) {
             logger.error("异常数据，ROWKEY 为空");
             return;
         }
-        ImmutableBytesWritable rowkey = new ImmutableBytesWritable(Bytes.toBytes(values[XmlUtil.extractRowkeyIndex(currentMappingInfo)]));
+
+//        if (Strings.isNullOrEmpty(values[XmlUtil.extractRowkeyIndex(currentMappingInfo)])) {
+//            logger.error("异常数据，ROWKEY 为空");
+//            return;
+//        }
+        ImmutableBytesWritable rowkey = new ImmutableBytesWritable(Bytes.toBytes(values.get(XmlUtil.extractRowkeyIndex(currentMappingInfo))));
+//        ImmutableBytesWritable rowkey = new ImmutableBytesWritable(Bytes.toBytes(values[XmlUtil.extractRowkeyIndex(currentMappingInfo)]));
         Long ts = 0L;
             /*
              * 解析数据文件路径，获取数据日期 data_date
@@ -82,7 +93,8 @@ public class TextMapper extends Mapper<LongWritable, Text, ImmutableBytesWritabl
              * TimeStamp
              * Value
              */
-        for (int i = 0; i < values.length; i++) {
+//        for (int i = 0; i < values.length; i++) {
+        for (int i = 0; i < values.size(); i++) {
             KeyValue kv = null;
             String columnFamily = null;
             String columnQualifier = null;
@@ -90,23 +102,25 @@ public class TextMapper extends Mapper<LongWritable, Text, ImmutableBytesWritabl
             if (i != XmlUtil.extractRowkeyIndex(currentMappingInfo)
                     && currentMappingInfo.getColumnMappingList().get(i).get("hbase-column-family") != null
                     && currentMappingInfo.getColumnMappingList().get(i).get("hbase-column-qualifier") != null) {
-                String transformedValue = PrintUtil.escapeConnotation(values[i]);
+                String transformedValue = PrintUtil.escapeConnotation(values.get(i));
+//                String transformedValue = PrintUtil.escapeConnotation(values[i]);
                 // 字段取值可能为空，将所有空值 \\N 转换为空串
                 if ("\\N".equals(transformedValue)) {
                     transformedValue = "";
                 }
 
-                try {
                 // 判断是否使用了字段动态填充功能
                 if (currentMappingInfo.isDynamicFill()) {
                     dynamicFillColumnRela = currentMappingInfo.getDynamicFillColumnRela();
                     if (currentMappingInfo.getColumnMappingList().get(i).get("hbase-column-family").indexOf("#") != -1) {
-                        columnFamily = values[dynamicFillColumnRela.get(currentMappingInfo.getColumnMappingList().get(i).get("hbase-column-family").replace("#",""))];
+                        columnFamily = values.get(dynamicFillColumnRela.get(currentMappingInfo.getColumnMappingList().get(i).get("hbase-column-family").replace("#","")));
+//                        columnFamily = values[dynamicFillColumnRela.get(currentMappingInfo.getColumnMappingList().get(i).get("hbase-column-family").replace("#",""))];
                     } else {
                         columnFamily = currentMappingInfo.getColumnMappingList().get(i).get("hbase-column-family");
                     }
                     if (currentMappingInfo.getColumnMappingList().get(i).get("hbase-column-qualifier").indexOf("#") != -1) {
-                        columnQualifier = values[dynamicFillColumnRela.get(currentMappingInfo.getColumnMappingList().get(i).get("hbase-column-qualifier").replace("#",""))];
+                        columnQualifier = values.get(dynamicFillColumnRela.get(currentMappingInfo.getColumnMappingList().get(i).get("hbase-column-qualifier").replace("#","")));
+//                        columnQualifier = values[dynamicFillColumnRela.get(currentMappingInfo.getColumnMappingList().get(i).get("hbase-column-qualifier").replace("#",""))];
                     } else {
                         columnQualifier = currentMappingInfo.getColumnMappingList().get(i).get("hbase-column-qualifier");
                     }
@@ -114,16 +128,24 @@ public class TextMapper extends Mapper<LongWritable, Text, ImmutableBytesWritabl
                     columnFamily = currentMappingInfo.getColumnMappingList().get(i).get("hbase-column-family");
                     columnQualifier = currentMappingInfo.getColumnMappingList().get(i).get("hbase-column-qualifier");
                 }
-//                try {
-                    kv = new KeyValue(Bytes.toBytes(values[XmlUtil.extractRowkeyIndex(currentMappingInfo)]),
+                try {
+                    kv = new KeyValue(Bytes.toBytes(values.get(XmlUtil.extractRowkeyIndex(currentMappingInfo))),
                             Bytes.toBytes(columnFamily),
                             Bytes.toBytes(columnQualifier),
                             ts,
                             Bytes.toBytes(transformedValue)
                     );
+//                    kv = new KeyValue(Bytes.toBytes(values[XmlUtil.extractRowkeyIndex(currentMappingInfo)]),
+//                            Bytes.toBytes(columnFamily),
+//                            Bytes.toBytes(columnQualifier),
+//                            ts,
+//                            Bytes.toBytes(transformedValue)
+//                    );
                 } catch (Exception e) {
-                    logger.error("异常数据：" + values[XmlUtil.extractRowkeyIndex(currentMappingInfo)] + ":" +
-                            PrintUtil.escapeConnotation(values[i]));
+                    logger.error("异常数据：" + values.get(XmlUtil.extractRowkeyIndex(currentMappingInfo)) + ":" +
+                            PrintUtil.escapeConnotation(values.get(i)));
+//                    logger.error("异常数据：" + values[XmlUtil.extractRowkeyIndex(currentMappingInfo)] + ":" +
+//                            PrintUtil.escapeConnotation(values[i]));
                     logger.error(e.getMessage());
                 }
             }
