@@ -112,9 +112,9 @@ public class GenericMapReduce extends Configured implements Tool {
         job.setMapOutputValueClass(KeyValue.class);
         for (String _path : inputPath.split(",")) {
             if (HdfsUtil.exists(_path)) {
-                List<String> pathInputList = HdfsUtil.getAllFilePaths(_path, ".+$(?<!\\.tmp)");
-                for (String $_path : pathInputList) {
-                    Path  filePath = new Path($_path);
+                List<String> filePathList = HdfsUtil.getAllFilePaths(_path, ".+$(?<!\\.tmp)");
+                for (String _fpath : filePathList) {
+                    Path  filePath = new Path(_fpath);
                     FileInputFormat.addInputPath(job, filePath);
                 }
             }
