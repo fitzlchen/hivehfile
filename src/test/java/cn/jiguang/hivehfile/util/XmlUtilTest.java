@@ -74,6 +74,13 @@ public class XmlUtilTest {
         assertEquals(expected,XmlUtil.extractMappingInfoList(document));
     }
 
+    @Test
+    public void testExtractCurrentMappingInfo(){
+        String dataFilePath = "hdfs://nameservice1/tmp/chenlin/dmp/rt_career/data_date=20171211/type=A";
+        ArrayList<MappingInfo> mappingInfos = XmlUtil.extractMappingInfoList(document);
+        MappingInfo currentMappingInfo = XmlUtil.extractCurrentMappingInfo(dataFilePath, mappingInfos);
+    }
+
 //    @Test
     public void testExtractHtableName(){
 //      assertEquals("fraud_feature_nor",XmlUtil.extractHtableName(document));

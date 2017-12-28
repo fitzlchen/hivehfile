@@ -84,7 +84,7 @@ public class XmlUtil {
             for (MappingInfo $map : mappingInfoList) {
                 // 检查数据文件路径中是否含有分区信息，以定位所需使用的MappingInfo。
                 for (String $partitionSegment : $map.getPartition().split(",")) {
-                    if (dataFilePath.endsWith($partitionSegment)) {    // 找到对应 MappingInfo
+                    if (dataFilePath.endsWith($partitionSegment) || dataFilePath.contains($partitionSegment + "/")) {    // 找到对应 MappingInfo
                         result = $map;
                         break;
                     }

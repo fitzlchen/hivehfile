@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <config>
     <!-- Global Settings -->
-    <input-path>hdfs://nameservice1/user/hive/warehouse/dmp.db/rt_device_prop</input-path>
+    <input-path>hdfs://nameservice1/tmp/chenlin/dmp/rt_career</input-path>
     <output-path>/tmp</output-path>
     <htable-name>bt_iaudience</htable-name>
     <field-delimiter>\u0001</field-delimiter>
@@ -14,7 +14,7 @@
     <!-- Local Settings -->
     <mapping-info>
         <partition>
-            data_date=20170717
+            data_date=20171211
         </partition>
         <column-mapping>
             <hive-column-name>imei</hive-column-name>
@@ -22,18 +22,10 @@
             <rowkey>true</rowkey>
         </column-mapping>
         <column-mapping>
-            <hive-column-name>value</hive-column-name>
-            <hive-column-type>float</hive-column-type>
-            <hbase-column-family>#family#</hbase-column-family>
-            <hbase-column-qualifier>feature</hbase-column-qualifier>
-        </column-mapping>
-        <column-mapping>
-            <hive-column-name>feature</hive-column-name>
+            <hive-column-name>job</hive-column-name>
             <hive-column-type>string</hive-column-type>
-        </column-mapping>
-        <column-mapping>
-            <hive-column-name>family</hive-column-name>
-            <hive-column-type>string</hive-column-type>
+            <hbase-column-family>A</hbase-column-family>
+            <hbase-column-qualifier>SOM_OCM_CAREER</hbase-column-qualifier>
         </column-mapping>
     </mapping-info>
 </config>
