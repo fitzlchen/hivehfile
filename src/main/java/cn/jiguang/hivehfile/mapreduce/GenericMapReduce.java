@@ -2,6 +2,7 @@ package cn.jiguang.hivehfile.mapreduce;
 
 import cn.jiguang.hivehfile.mapreduce.mapper.ParquetMapper;
 import cn.jiguang.hivehfile.mapreduce.mapper.TextMapper;
+import cn.jiguang.hivehfile.util.HdfsUtil;
 import cn.jiguang.hivehfile.util.MapUtil;
 import cn.jiguang.hivehfile.util.XmlUtil;
 import org.apache.commons.cli.*;
@@ -26,6 +27,8 @@ import org.apache.hadoop.util.Tool;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.apache.parquet.avro.AvroParquetInputFormat;
+
+import java.util.List;
 
 /**
  * Created by jiguang
@@ -107,11 +110,14 @@ public class GenericMapReduce extends Configured implements Tool {
         }
         job.setMapOutputKeyClass(ImmutableBytesWritable.class);
         job.setMapOutputValueClass(KeyValue.class);
-        FileSystem fs = FileSystem.get(configuration);
-        for (String p : inputPath.split(",")) {
-            Path path = new Path(p);
-            if (fs.exists(path))
-                FileInputFormat.addInputPath(job, path);
+        for (String _path : inputPath.split(",")) {
+            if (HdfsUtil.exists(_path)) {
+                List<String> pathInputList = HdfsUtil.getAllFilePaths(_path, ".+$(?<!\\.tmp)");
+                for (String $_path : pathInputList) {
+                    Path  filePath = new Path($_path);
+                    FileInputFormat.addInputPath(job, filePath);
+                }
+            }
         }
         FileOutputFormat.setOutputPath(job, new Path(outputPath));
         Configuration hbaseConf = HBaseConfiguration.create(configuration);
