@@ -116,13 +116,13 @@ public class XmlUtilTest {
         assertEquals("imei",XmlUtil.extractRowKeyColumnName(currentMappingInfo));
     }
 
-//    @Test
+    @Test
     public void testExtractDelimiterCollection(){
         HashMap<String,String> expected = new HashMap<String, String>();
-        expected.put("field-delimiter","0001");
+        expected.put("field-delimiter","\u0001");
         expected.put("collection-item-delimiter",",");
         HashMap<String,String> actual = XmlUtil.extractDelimiterCollection(document);
-        assertEquals("0001",actual.get("field-delimiter"));
+        assertEquals(expected.get("field-delimiter"),actual.get("field-delimiter"));
     }
 
     //    @Test

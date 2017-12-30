@@ -197,7 +197,7 @@ public class XmlUtil {
     public static HashMap<String, String> extractDelimiterCollection(Document document) {
         HashMap<String, String> result = new HashMap<String, String>();
         // 当分隔符为 \u0001时，使用 (char)0001表示
-        if("\u0001".equals(document.getRootElement().elementText("field-delimiter"))){
+        if("\\u0001".equals(document.getRootElement().elementText("field-delimiter"))){
             result.put("field-delimiter", String.valueOf((char) Integer.parseInt(document.getRootElement().elementText("field-delimiter").substring(2))));
         }else{
             result.put("field-delimiter",document.getRootElement().elementText("field-delimiter"));

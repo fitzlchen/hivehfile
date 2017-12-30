@@ -32,13 +32,17 @@ import java.util.HashMap;
 public class TextMapper extends Mapper<LongWritable, Text, ImmutableBytesWritable, KeyValue> {
     private Logger logger = LogManager.getLogger(TextMapper.class);
     private cn.jiguang.hivehfile.Configuration selfDefinedConfig = null;
-    private String unique = null;
+    private String
+            unique = null
+            , delimiter = null
+            ;
 
     @Override
     public void setup(Context context) throws IOException {
         // 读取HDFS配置文件，并将其封装成对象
         selfDefinedConfig = XmlUtil.generateConfigurationFromXml(context.getConfiguration(), context.getConfiguration().get("config.file.path"));
         unique = context.getConfiguration().get("user.defined.parameter.unique");
+        delimiter = selfDefinedConfig.getDelimiterCollection().get("field-delimiter");
     }
 
     @Override
@@ -46,10 +50,9 @@ public class TextMapper extends Mapper<LongWritable, Text, ImmutableBytesWritabl
         String inputString = value.toString();
         // 获取数据文件的路径
         String dataFilePath = ((FileSplit) context.getInputSplit()).getPath().getParent().toString();
-        ArrayList<String> values = Lists.newArrayList(Splitter.on(selfDefinedConfig.getDelimiterCollection().get("field-delimiter")).split(inputString));
+        ArrayList<String> values = Lists.newArrayList(Splitter.on(delimiter).split(inputString));
         // 获取当前 MappingInfo
         MappingInfo currentMappingInfo = XmlUtil.extractCurrentMappingInfo(dataFilePath, selfDefinedConfig.getMappingInfoList());
-        logger.info("receive:" + values + ", currentMappingSize:" + currentMappingInfo.getColumnMappingList().size());
         // 检验 MappingInfo 中，ColumnMapping 数目是否与数据文件字段数匹配
         if (!currentMappingInfo.isColumnMatch(values.size())) {
             throw new InterruptedException("配置文件校验失败，配置文件的column-mapping数目与数据文件不匹配！异常内容：" + inputString);
