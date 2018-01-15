@@ -111,6 +111,10 @@ public class ParquetMapper extends Mapper<Void, GenericRecord, ImmutableBytesWri
                     columnQualifier = currentMappingInfo.getColumnMappingList().get(i).get("hbase-column-qualifier");
                 }
                 try {
+                    // 限制 value 占用空间小于 10MB
+                    if (values[XmlUtil.extractRowkeyIndex(currentMappingInfo)].getBytes().length > 10 * 1024 * 1024){
+                        continue;
+                    }
                     kv = new KeyValue(Bytes.toBytes(values[XmlUtil.extractRowkeyIndex(currentMappingInfo)]),
                             Bytes.toBytes(columnFamily),
                             Bytes.toBytes(columnQualifier),

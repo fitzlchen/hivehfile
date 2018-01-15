@@ -82,7 +82,7 @@ public class XmlUtil {
         if (mappingInfoList != null) isPartitionedTable = mappingInfoList.get(0).getPartition() == null ? false : true;
         if (isPartitionedTable) {
             for (MappingInfo $map : mappingInfoList) {
-                // 检查数据文件路径中是否含有分区信息，以定位所需使用的MappingInfo。
+                // 检查数据文件路径中是否含有分区信息，以定位所需使用的MappingInfo
                 for (String $partitionSegment : $map.getPartition().split(",")) {
                     if (dataFilePath.endsWith($partitionSegment) || dataFilePath.contains($partitionSegment + "/")) {    // 找到对应 MappingInfo
                         result = $map;

@@ -120,6 +120,10 @@ public class TextMapper extends Mapper<LongWritable, Text, ImmutableBytesWritabl
                     columnQualifier = currentMappingInfo.getColumnMappingList().get(i).get("hbase-column-qualifier");
                 }
                 try {
+                    // 限制 value 占用空间小于 10MB
+                    if (values.get(XmlUtil.extractRowkeyIndex(currentMappingInfo)).getBytes().length > 10 * 1024 * 1024){
+                        continue;
+                    }
                     kv = new KeyValue(Bytes.toBytes(values.get(XmlUtil.extractRowkeyIndex(currentMappingInfo))),
                             Bytes.toBytes(columnFamily),
                             Bytes.toBytes(columnQualifier),
