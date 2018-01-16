@@ -55,10 +55,10 @@ public class ParquetMapper extends Mapper<Void, GenericRecord, ImmutableBytesWri
         }
         ImmutableBytesWritable rowkey = new ImmutableBytesWritable(Bytes.toBytes(values[XmlUtil.extractRowkeyIndex(currentMappingInfo)]));
         Long ts = 0L;
-            /*
-             * 解析数据文件路径，获取数据日期 data_date
-             * 当数据文件路径中不含有 data_date 时，默认使用当前时间
-             */
+        /*
+         * 解析数据文件路径，获取数据日期 data_date
+         * 当数据文件路径中不含有 data_date 时，默认使用当前时间
+         */
         try {
             if ("true".equalsIgnoreCase(unique))
                 ts = DateUtil.generateUniqTimeStamp(dataFilePath, "yyyyMMdd", "data_date=(\\d{8})");
@@ -71,14 +71,14 @@ public class ParquetMapper extends Mapper<Void, GenericRecord, ImmutableBytesWri
 
         HashMap<String, Integer> dynamicFillColumnRela = null;
 
-            /* 开始装配HFile
-             * 所需参数：
-             * RowKey
-             * ColumnFamily
-             * ColumnQualifier
-             * TimeStamp
-             * Value
-             */
+        /* 开始装配HFile
+         * 所需参数：
+         * RowKey
+         * ColumnFamily
+         * ColumnQualifier
+         * TimeStamp
+         * Value
+         */
         for (int i = 0; i < values.length; i++) {
             KeyValue kv = null;
             String columnFamily = null;

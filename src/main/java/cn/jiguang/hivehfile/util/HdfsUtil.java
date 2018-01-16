@@ -67,8 +67,7 @@ public class HdfsUtil {
       for (int i = 0; i < status.length; i++) {
          Path path = status[i].getPath();
          long fileSize = status[i].getLen();
-         // fileSize greater then 42, because flume has exception when close the compression data file
-         if (hdfs.isFile(path) && fileSize > 42) {
+         if (hdfs.isFile(path)) {
             filePaths.add(path.toString());
             LOG.info(path.toString());
          }
