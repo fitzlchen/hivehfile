@@ -121,7 +121,7 @@ public class TextMapper extends Mapper<LongWritable, Text, ImmutableBytesWritabl
                 }
                 try {
                     // 限制 value 占用空间小于 10MB
-                    if (values.get(XmlUtil.extractRowkeyIndex(currentMappingInfo)).getBytes().length > 10 * 1024 * 1024){
+                    if (transformedValue.getBytes().length > 10 * 1024 * 1024){
                         continue;
                     }
                     kv = new KeyValue(Bytes.toBytes(values.get(XmlUtil.extractRowkeyIndex(currentMappingInfo))),
