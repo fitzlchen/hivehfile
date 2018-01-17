@@ -97,6 +97,14 @@ public class GenericMapReduce extends Configured implements Tool {
             String errMsg = String.format("输出目录已经存在:%s", outputPath);
             throw new FileAlreadyExistsException(errMsg);
         }
+        // 内存使用设置
+        configuration.set("yarn.scheduler.minimum-allocation-mb", "1024");
+        configuration.set("yarn.scheduler.maximum-allocation-mb", "8192");
+        configuration.set("mapreduce.map.memory.mb", "8192");
+        configuration.set("mapreduce.map.java.opts", "-Xmx8192M");
+        configuration.set("mapreduce.reduce.memory.mb", "8192");
+        configuration.set("mapreduce.reduce.java.opts", "-Xmx8192M");
+        // ZooKeeper设置
         configuration.set("hbase.zookeeper.quorum", selfDefinedConfig.getHbaseZookeeperQuorum());
         configuration.set("hbase.zookeeper.property.clientPort", selfDefinedConfig.getHbaseZookeeperPropertyClientPort());
         configuration.set("hbase.zookeeper.property.maxClientCnxns", selfDefinedConfig.getHbaseZookeeperPropertyMaxClientCnxns());
