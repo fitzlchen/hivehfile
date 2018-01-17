@@ -91,7 +91,6 @@ public class GenericMapReduce extends Configured implements Tool {
         String inputPath = selfDefinedConfig.getAllInputPath();
         String outputPath = selfDefinedConfig.getOutputPath(),
                 htableName = selfDefinedConfig.getHtableName();
-        logger.info("[TEST]mapreduce.reduce.memory.mb=" + configuration.get("mapreduce.reduce.memory.mb"));
         // 检出输出目录是否存在
         FileSystem fs = FileSystem.get(configuration);
         if (fs.exists(new Path(outputPath))){
