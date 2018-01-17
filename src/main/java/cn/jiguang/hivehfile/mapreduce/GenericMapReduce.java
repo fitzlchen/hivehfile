@@ -1,5 +1,6 @@
 package cn.jiguang.hivehfile.mapreduce;
 
+import cn.jiguang.hivehfile.exception.FileAlreadyExistsException;
 import cn.jiguang.hivehfile.mapreduce.mapper.ParquetMapper;
 import cn.jiguang.hivehfile.mapreduce.mapper.TextMapper;
 import cn.jiguang.hivehfile.util.HdfsUtil;
@@ -46,6 +47,8 @@ public class GenericMapReduce extends Configured implements Tool {
      *             -config 配置文件路径
      *             -dict 字典参数
      *             -format 数据文件格式
+     *             -unique 是否生成唯一的时间戳
+     *             -name 自定义任务名称
      * @return
      * @throws Exception
      */
@@ -88,6 +91,12 @@ public class GenericMapReduce extends Configured implements Tool {
         String inputPath = selfDefinedConfig.getAllInputPath();
         String outputPath = selfDefinedConfig.getOutputPath(),
                 htableName = selfDefinedConfig.getHtableName();
+        // 检出输出目录是否存在
+        FileSystem fs = FileSystem.get(configuration);
+        if (fs.exists(new Path(outputPath))){
+            String errMsg = String.format("输出目录已经存在:%s", outputPath);
+            throw new FileAlreadyExistsException(errMsg);
+        }
         configuration.set("hbase.zookeeper.quorum", selfDefinedConfig.getHbaseZookeeperQuorum());
         configuration.set("hbase.zookeeper.property.clientPort", selfDefinedConfig.getHbaseZookeeperPropertyClientPort());
         configuration.set("hbase.zookeeper.property.maxClientCnxns", selfDefinedConfig.getHbaseZookeeperPropertyMaxClientCnxns());
