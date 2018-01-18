@@ -99,11 +99,11 @@ public class GenericMapReduce extends Configured implements Tool {
         }
         // 内存使用设置
         configuration.set("yarn.scheduler.minimum-allocation-mb", "1024");
-        configuration.set("yarn.scheduler.maximum-allocation-mb", "8192");
-        configuration.set("mapreduce.map.memory.mb", "8192");
-        configuration.set("mapreduce.map.java.opts", "-Xmx8192M");
-        configuration.set("mapreduce.reduce.memory.mb", "8192");
-        configuration.set("mapreduce.reduce.java.opts", "-Xmx8192M");
+        configuration.set("yarn.scheduler.maximum-allocation-mb", "7168");
+        configuration.set("mapreduce.map.memory.mb", "7168");
+        configuration.set("mapreduce.map.java.opts", "-Xmx7168M");
+        configuration.set("mapreduce.reduce.memory.mb", "7168");
+        configuration.set("mapreduce.reduce.java.opts", "-Xmx7168M");
         // ZooKeeper设置
         configuration.set("hbase.zookeeper.quorum", selfDefinedConfig.getHbaseZookeeperQuorum());
         configuration.set("hbase.zookeeper.property.clientPort", selfDefinedConfig.getHbaseZookeeperPropertyClientPort());
