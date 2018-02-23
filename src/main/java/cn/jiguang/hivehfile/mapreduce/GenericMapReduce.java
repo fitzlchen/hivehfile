@@ -32,7 +32,7 @@ import org.apache.parquet.avro.AvroParquetInputFormat;
 import java.util.List;
 
 /**
- * Created by jiguang
+ * Created by fitz
  * Date: 2017/4/25
  */
 public class GenericMapReduce extends Configured implements Tool {
@@ -59,7 +59,7 @@ public class GenericMapReduce extends Configured implements Tool {
         options.addOption("format", true, "数据文件格式");
         options.addOption("unique", true, "键值对的时间戳是否唯一");
         options.addOption("name",true,"作业名称");
-        CommandLine cmd = new BasicParser().parse(options, args);
+        CommandLine cmd = new DefaultParser().parse(options, args);
         if (!cmd.hasOption("config")) {
             logger.fatal("缺少配置文件路径，请检查传递的参数！");
             System.exit(-1);
