@@ -1,5 +1,6 @@
 package cn.jiguang.hivehfile.mapreduce.mapper;
 
+import cn.jiguang.hivehfile.counter.RowkeyCounter;
 import cn.jiguang.hivehfile.model.MappingInfo;
 import cn.jiguang.hivehfile.util.DateUtil;
 import cn.jiguang.hivehfile.util.PrintUtil;
@@ -63,6 +64,13 @@ public class TextMapper extends Mapper<LongWritable, Text, ImmutableBytesWritabl
         }
 
         ImmutableBytesWritable rowkey = new ImmutableBytesWritable(Bytes.toBytes(values.get(XmlUtil.extractRowkeyIndex(currentMappingInfo))));
+        // ======TEST======
+        String stringRowkey = values.get(XmlUtil.extractRowkeyIndex(currentMappingInfo));
+        if (!stringRowkey.matches("^[a-zA-Z0-9]+$")){
+            context.getCounter(RowkeyCounter.ILLEGAL_ROWKEY_COUNTER).increment(1);
+        }
+        context.getCounter(RowkeyCounter.TOTAL_ROWKEY_COUNTER).increment(1);
+        // ======TEST======
         Long ts = 0L;
             /*
              * 解析数据文件路径，获取数据日期 data_date
