@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <config>
     <!-- Global Settings -->
-    <input-path>hdfs://nameservice1/user/hive/warehouse/anti_fraud.db/jietiao_factor_data_r</input-path>
-    <output-path>hdfs://nameservice1/tmp/hfile-output-20170717</output-path>
-    <htable-name>fraud:jietiao_factor_v1</htable-name>
+    <input-path></input-path>
+    <output-path></output-path>
+    <htable-name></htable-name>
     <field-delimiter>\u0001</field-delimiter>
     <collection-item-delimiter>,</collection-item-delimiter>
-    <hbase.zookeeper.quorum>192.168.254.67,192.168.254.68,192.168.255.66</hbase.zookeeper.quorum>
-    <hbase.zookeeper.property.clientPort>2181</hbase.zookeeper.property.clientPort>
-    <hbase.zookeeper.property.maxClientCnxns>400</hbase.zookeeper.property.maxClientCnxns>
-    <hbase.znode.parent>/hbase</hbase.znode.parent>
+    <hbase.zookeeper.quorum></hbase.zookeeper.quorum>
+    <hbase.zookeeper.property.clientPort></hbase.zookeeper.property.clientPort>
+    <hbase.zookeeper.property.maxClientCnxns></hbase.zookeeper.property.maxClientCnxns>
+    <hbase.znode.parent></hbase.znode.parent>
 
     <!-- Local Settings -->
     <!-- 1 -->
@@ -17,6 +17,9 @@
         <partition>
             data_date=20170717
         </partition>
+        <plugins>
+            imei-filter
+        </plugins>
         <column-mapping>
             <hive-column-name>imei</hive-column-name>
             <hive-column-type>string</hive-column-type>

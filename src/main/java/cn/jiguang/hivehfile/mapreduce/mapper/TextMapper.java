@@ -8,6 +8,7 @@ import cn.jiguang.hivehfile.util.XmlUtil;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import org.apache.hadoop.hbase.KeyValue;
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
 import org.apache.hadoop.hbase.util.Bytes;
@@ -22,6 +23,9 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by: fitz
@@ -34,9 +38,9 @@ public class TextMapper extends Mapper<LongWritable, Text, ImmutableBytesWritabl
     private Logger logger = LogManager.getLogger(TextMapper.class);
     private cn.jiguang.hivehfile.Configuration selfDefinedConfig = null;
     private String
-            unique = null
-            , delimiter = null
-            ;
+            unique = null, delimiter = null, plugins = null, dataFilePath = null;
+    private Map<String, String> partitionInfo = null;
+    private MappingInfo currentMappingInfo = null;
 
     @Override
     public void setup(Context context) throws IOException {
@@ -44,17 +48,28 @@ public class TextMapper extends Mapper<LongWritable, Text, ImmutableBytesWritabl
         selfDefinedConfig = XmlUtil.generateConfigurationFromXml(context.getConfiguration(), context.getConfiguration().get("config.file.path"));
         unique = context.getConfiguration().get("user.defined.parameter.unique");
         delimiter = selfDefinedConfig.getDelimiterCollection().get("field-delimiter");
+        plugins = context.getConfiguration().get("user.defined.plugins");
+        // extract partition info from hive managed table
+        partitionInfo = Maps.newHashMap();
+        // find out the file name of the input split
+        dataFilePath = ((FileSplit) context.getInputSplit()).getPath().getParent().toString();
+        Matcher matcher = Pattern.compile("((\\w+)=(\\w+))").matcher(dataFilePath);
+        while (matcher.find()) {
+            partitionInfo.put(matcher.group(2), matcher.group(3));
+        }
+        // get current MappingInfo
+        currentMappingInfo = XmlUtil.extractCurrentMappingInfo(dataFilePath, selfDefinedConfig.getMappingInfoList());
+        if (currentMappingInfo == null){
+            logger.error("CurrentMappingInfo is null! Killing container...");
+            System.exit(-1);
+        }
     }
 
     @Override
     public void map(LongWritable key, Text value, Mapper.Context context) throws IOException, InterruptedException {
         String inputString = value.toString();
-        // 获取数据文件的路径
-        String dataFilePath = ((FileSplit) context.getInputSplit()).getPath().getParent().toString();
         ArrayList<String> values = Lists.newArrayList(Splitter.on(delimiter).split(inputString));
-        // 获取当前 MappingInfo
-        MappingInfo currentMappingInfo = XmlUtil.extractCurrentMappingInfo(dataFilePath, selfDefinedConfig.getMappingInfoList());
-        // 检验 MappingInfo 中，ColumnMapping 数目是否与数据文件字段数匹配
+        // check weather the number of ColumnMapping is equals to the number of hive columns
         if (!currentMappingInfo.isColumnMatch(values.size())) {
             throw new InterruptedException("配置文件校验失败，配置文件的column-mapping数目与数据文件不匹配！异常内容：" + inputString);
         }
@@ -64,18 +79,23 @@ public class TextMapper extends Mapper<LongWritable, Text, ImmutableBytesWritabl
         }
 
         ImmutableBytesWritable rowkey = new ImmutableBytesWritable(Bytes.toBytes(values.get(XmlUtil.extractRowkeyIndex(currentMappingInfo))));
-        // ======TEST======
-        String stringRowkey = values.get(XmlUtil.extractRowkeyIndex(currentMappingInfo));
-        if (!stringRowkey.matches("^[a-zA-Z0-9]+$")){
-            context.getCounter(RowkeyCounter.ILLEGAL_ROWKEY_COUNTER).increment(1);
+        // use customized filter plugin
+        if (plugins != null) {
+            Splitter.on(plugins).split(",");
         }
-        context.getCounter(RowkeyCounter.TOTAL_ROWKEY_COUNTER).increment(1);
-        // ======TEST======
+
+        //TODO  support rowkey filter plugins
+//        String stringRowkey = values.get(XmlUtil.extractRowkeyIndex(currentMappingInfo));
+//        if (!stringRowkey.matches("^[a-zA-Z0-9]+$")) {
+//            context.getCounter(RowkeyCounter.ILLEGAL_ROWKEY_COUNTER).increment(1);
+//        }
+//        context.getCounter(RowkeyCounter.TOTAL_ROWKEY_COUNTER).increment(1);
+
         Long ts = 0L;
-            /*
-             * 解析数据文件路径，获取数据日期 data_date
-             * 当数据文件路径中不含有 data_date 时，默认使用当前时间
-             */
+        /*
+         * 解析数据文件路径，获取数据日期 data_date
+         * 当数据文件路径中不含有 data_date 时，默认使用当前时间
+         */
         try {
             if ("true".equalsIgnoreCase(unique))
                 ts = DateUtil.generateUniqTimeStamp(dataFilePath, "yyyyMMdd", "data_date=(\\d{8})");
@@ -86,20 +106,19 @@ public class TextMapper extends Mapper<LongWritable, Text, ImmutableBytesWritabl
             System.exit(-1);    // 异常直接退出
         }
 
-        HashMap<String, Integer> dynamicFillColumnRela = null;
+        HashMap<String, Integer> dynamicFillColumnRela;
 
-            /* 开始装配HFile
-             * 所需参数：
-             * RowKey
-             * ColumnFamily
-             * ColumnQualifier
-             * TimeStamp
-             * Value
-             */
+        /* 开始装配HFile
+         * 所需参数：
+         * RowKey
+         * ColumnFamily
+         * ColumnQualifier
+         * TimeStamp
+         * Value
+         */
         for (int i = 0; i < values.size(); i++) {
             KeyValue kv = null;
-            String columnFamily = null;
-            String columnQualifier = null;
+            String columnFamily = null, columnQualifier = null, pureColumnFamily = null, pureColumnQualifier = null;
             // 只遍历非 Rowkey 且 需要写入 HBase 的字段
             if (i != XmlUtil.extractRowkeyIndex(currentMappingInfo)
                     && currentMappingInfo.getColumnMappingList().get(i).get("hbase-column-family") != null
@@ -111,25 +130,32 @@ public class TextMapper extends Mapper<LongWritable, Text, ImmutableBytesWritabl
                 }
 
                 // 判断是否使用了字段动态填充功能
+                columnFamily = currentMappingInfo.getColumnMappingList().get(i).get("hbase-column-family");
+                columnQualifier = currentMappingInfo.getColumnMappingList().get(i).get("hbase-column-qualifier");
+                pureColumnFamily = columnFamily.replace("#", "");
+                pureColumnQualifier = columnQualifier.replace("#", "");
                 if (currentMappingInfo.isDynamicFill()) {
                     dynamicFillColumnRela = currentMappingInfo.getDynamicFillColumnRela();
-                    if (currentMappingInfo.getColumnMappingList().get(i).get("hbase-column-family").indexOf("#") != -1) {
-                        columnFamily = values.get(dynamicFillColumnRela.get(currentMappingInfo.getColumnMappingList().get(i).get("hbase-column-family").replace("#","")));
-                    } else {
-                        columnFamily = currentMappingInfo.getColumnMappingList().get(i).get("hbase-column-family");
+                    if (columnFamily.indexOf("#") != -1) {
+                        // 判断使用分区字段还是使用列字段
+                        if (partitionInfo.containsKey(pureColumnFamily)) {
+                            columnFamily = partitionInfo.get(pureColumnFamily);
+                        } else {
+                            columnFamily = values.get(dynamicFillColumnRela.get(pureColumnFamily));
+                        }
                     }
-                    if (currentMappingInfo.getColumnMappingList().get(i).get("hbase-column-qualifier").indexOf("#") != -1) {
-                        columnQualifier = values.get(dynamicFillColumnRela.get(currentMappingInfo.getColumnMappingList().get(i).get("hbase-column-qualifier").replace("#","")));
-                    } else {
-                        columnQualifier = currentMappingInfo.getColumnMappingList().get(i).get("hbase-column-qualifier");
+                    if (columnQualifier.indexOf("#") != -1) {
+                        // 判断使用分区字段还是使用列字段
+                        if (partitionInfo.containsKey(pureColumnQualifier)) {
+                            columnQualifier = partitionInfo.get(pureColumnQualifier);
+                        } else {
+                            columnQualifier = values.get(dynamicFillColumnRela.get(pureColumnQualifier));
+                        }
                     }
-                } else {
-                    columnFamily = currentMappingInfo.getColumnMappingList().get(i).get("hbase-column-family");
-                    columnQualifier = currentMappingInfo.getColumnMappingList().get(i).get("hbase-column-qualifier");
                 }
                 try {
                     // 限制 value 占用空间小于 10MB
-                    if (transformedValue.getBytes().length > 10 * 1024 * 1024){
+                    if (transformedValue.getBytes().length > 10 * 1024 * 1024) {
                         continue;
                     }
                     kv = new KeyValue(Bytes.toBytes(values.get(XmlUtil.extractRowkeyIndex(currentMappingInfo))),

@@ -19,7 +19,7 @@ import java.util.regex.Pattern;
 
 import static org.junit.Assert.*;
 /**
- * Created by jiguang
+ * Created by fitz
  * Date: 2017/4/25
  */
 public class XmlUtilTest {

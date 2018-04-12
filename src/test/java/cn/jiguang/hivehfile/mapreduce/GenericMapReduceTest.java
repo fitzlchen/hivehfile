@@ -28,13 +28,8 @@ public class GenericMapReduceTest {
     }
 
     @Test
-    public void testGenericMapReduce() throws ParseException, IOException {
-//        mapDriver.withInput(new LongWritable(0), new Text("863891033364736\u0001企业人员"))
-//                .withOutput()
-//                .runTest();
+    public void testGenericMapReduce() {
 
-        List<String> lists =Lists.newArrayList(Splitter.on("\u0001").split("863891033364736\u0001企业人员"));
-        Assert.assertEquals(2, lists.size());
     }
 }
 
