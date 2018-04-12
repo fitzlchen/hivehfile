@@ -5,6 +5,7 @@ import cn.jiguang.hivehfile.util.DateUtil;
 import cn.jiguang.hivehfile.util.PrintUtil;
 import cn.jiguang.hivehfile.util.XmlUtil;
 import com.google.common.base.Strings;
+import com.google.common.collect.Maps;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.hadoop.hbase.KeyValue;
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
@@ -17,6 +18,9 @@ import org.apache.log4j.Logger;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by: fitz
@@ -28,21 +32,35 @@ import java.util.HashMap;
 public class ParquetMapper extends Mapper<Void, GenericRecord, ImmutableBytesWritable, KeyValue> {
     private Logger logger = LogManager.getLogger(ParquetMapper.class);
     private cn.jiguang.hivehfile.Configuration selfDefinedConfig = null;
-    private String unique = null;
+    private String unique = null, dataFilePath = null;
+    private MappingInfo currentMappingInfo;
+    private Map<String, String> partitionInfo = null;
 
     @Override
     public void setup(Context context) throws IOException {
         // 读取HDFS配置文件，并将其封装成对象
         selfDefinedConfig = XmlUtil.generateConfigurationFromXml(context.getConfiguration(), context.getConfiguration().get("config.file.path"));
         unique = context.getConfiguration().get("user.defined.parameter.unique");
+        // 获取数据文件的父路径
+        dataFilePath = ((FileSplit) context.getInputSplit()).getPath().getParent().toString();
+        // 获取当前 MappingInfo
+        currentMappingInfo = XmlUtil.extractCurrentMappingInfo(dataFilePath, selfDefinedConfig.getMappingInfoList());
+        if (currentMappingInfo == null){
+            logger.error("CurrentMappingInfo is null! Killing container...");
+            System.exit(-1);
+        }
+        // extract partition info from hive managed table
+        partitionInfo = Maps.newHashMap();
+        // find out the file name of the input split
+        dataFilePath = ((FileSplit) context.getInputSplit()).getPath().getParent().toString();
+        Matcher matcher = Pattern.compile("((\\w+)=(\\w+))").matcher(dataFilePath);
+        while (matcher.find()) {
+            partitionInfo.put(matcher.group(2), matcher.group(3));
+        }
     }
 
     @Override
     public void map(Void key, GenericRecord value, Mapper.Context context) throws IOException, InterruptedException {
-        // 获取数据文件的父路径
-        String dataFilePath = ((FileSplit) context.getInputSplit()).getPath().getParent().toString();
-        // 获取当前 MappingInfo
-        MappingInfo currentMappingInfo = XmlUtil.extractCurrentMappingInfo(dataFilePath, selfDefinedConfig.getMappingInfoList());
         // 根据 MappingInfo 读取字段信息
         String[] values = new String[currentMappingInfo.getColumnMappingList().size()];
         for (int i = 0; i < values.length; i++) {
@@ -81,8 +99,7 @@ public class ParquetMapper extends Mapper<Void, GenericRecord, ImmutableBytesWri
          */
         for (int i = 0; i < values.length; i++) {
             KeyValue kv = null;
-            String columnFamily = null;
-            String columnQualifier = null;
+            String columnFamily = null, columnQualifier = null, pureColumnFamily = null, pureColumnQualifier = null;
             // 只遍历非 Rowkey 且 需要写入 HBase 的字段
             if (i != XmlUtil.extractRowkeyIndex(currentMappingInfo)
                     && currentMappingInfo.getColumnMappingList().get(i).get("hbase-column-family") != null
@@ -94,21 +111,28 @@ public class ParquetMapper extends Mapper<Void, GenericRecord, ImmutableBytesWri
                 }
 
                 // 判断是否使用了字段动态填充功能
+                columnFamily = currentMappingInfo.getColumnMappingList().get(i).get("hbase-column-family");
+                columnQualifier = currentMappingInfo.getColumnMappingList().get(i).get("hbase-column-qualifier");
+                pureColumnFamily = columnFamily.replace("#", "");
+                pureColumnQualifier = columnQualifier.replace("#", "");
                 if (currentMappingInfo.isDynamicFill()) {
                     dynamicFillColumnRela = currentMappingInfo.getDynamicFillColumnRela();
-                    if (currentMappingInfo.getColumnMappingList().get(i).get("hbase-column-family").indexOf("#") != -1) {
-                        columnFamily = values[dynamicFillColumnRela.get(currentMappingInfo.getColumnMappingList().get(i).get("hbase-column-family").replace("#",""))];
-                    } else {
-                        columnFamily = currentMappingInfo.getColumnMappingList().get(i).get("hbase-column-family");
+                    if (columnFamily.indexOf("#") != -1) {
+                        // 判断使用分区字段还是使用列字段
+                        if (partitionInfo.containsKey(pureColumnFamily)) {
+                            columnFamily = partitionInfo.get(pureColumnFamily);
+                        } else {
+                            columnFamily = values[dynamicFillColumnRela.get(pureColumnFamily)];
+                        }
                     }
-                    if (currentMappingInfo.getColumnMappingList().get(i).get("hbase-column-qualifier").indexOf("#") != -1) {
-                        columnQualifier = values[dynamicFillColumnRela.get(currentMappingInfo.getColumnMappingList().get(i).get("hbase-column-qualifier").replace("#",""))];
-                    } else {
-                        columnQualifier = currentMappingInfo.getColumnMappingList().get(i).get("hbase-column-qualifier");
+                    if (columnQualifier.indexOf("#") != -1) {
+                        // 判断使用分区字段还是使用列字段
+                        if (partitionInfo.containsKey(pureColumnQualifier)) {
+                            columnQualifier = partitionInfo.get(pureColumnQualifier);
+                        } else {
+                            columnQualifier = values[dynamicFillColumnRela.get(pureColumnQualifier)];
+                        }
                     }
-                } else {
-                    columnFamily = currentMappingInfo.getColumnMappingList().get(i).get("hbase-column-family");
-                    columnQualifier = currentMappingInfo.getColumnMappingList().get(i).get("hbase-column-qualifier");
                 }
                 try {
                     // 限制 value 占用空间小于 10MB

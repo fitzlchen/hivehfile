@@ -84,13 +84,6 @@ public class TextMapper extends Mapper<LongWritable, Text, ImmutableBytesWritabl
             Splitter.on(plugins).split(",");
         }
 
-        //TODO  support rowkey filter plugins
-//        String stringRowkey = values.get(XmlUtil.extractRowkeyIndex(currentMappingInfo));
-//        if (!stringRowkey.matches("^[a-zA-Z0-9]+$")) {
-//            context.getCounter(RowkeyCounter.ILLEGAL_ROWKEY_COUNTER).increment(1);
-//        }
-//        context.getCounter(RowkeyCounter.TOTAL_ROWKEY_COUNTER).increment(1);
-
         Long ts = 0L;
         /*
          * 解析数据文件路径，获取数据日期 data_date
