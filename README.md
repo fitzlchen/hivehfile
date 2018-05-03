@@ -188,7 +188,7 @@
     &lt;/mapping-info&gt;
 &lt;/config&gt;
 </pre>
-<strong>HBase 列族和列名自动填充的配置文件</strong>
+<strong>HBase 列族和列名自动填充的配置文件(支持填写表字段，包含分区字段)</strong>
 <pre>
 &lt;?xml version="1.0" encoding="UTF-8" ?&gt;
 &lt;config&gt;
