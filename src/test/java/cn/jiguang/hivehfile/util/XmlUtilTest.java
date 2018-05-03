@@ -116,7 +116,7 @@ public class XmlUtilTest {
         assertEquals("imei",XmlUtil.extractRowKeyColumnName(currentMappingInfo));
     }
 
-    @Test
+//    @Test
     public void testExtractDelimiterCollection(){
         HashMap<String,String> expected = new HashMap<String, String>();
         expected.put("field-delimiter","\u0001");
@@ -140,12 +140,51 @@ public class XmlUtilTest {
         System.out.println(doc.getRootElement().elementText("element"));
     }
 
-//    @Test
+    @Test
     public void testVariableReplacement() throws DocumentException {
         SAXReader reader = new SAXReader();
-        Document actual = reader.read(XmlUtilTest.class.getResourceAsStream("/test-config.xml"));
-        actual = XmlUtil.variableReplacement(actual,"{'inPath':'hdfs://nameservice1/user/hive/warehouse/dmp.db/rt_jid_v2','outPath':'hdfs://nameservice1/tmp/user-profile/CID_JID','partition':'data_date=20170507,data_date=20170508,data_date=20170509,data_date=20170510','hive-column-name':'value','hive-column-type':'string'}'");
-        assertEquals(document, actual);
+        Document doc = reader.read(XmlUtilTest.class.getResourceAsStream("/test-config.xml"));
+        doc = XmlUtil.variableReplacement(doc,"{'HFILE_POS':'hdfs://nameservice1/tmp/user-profile/hfile/chenyh2/tags__shuce_tag/A/hbase_col', 'partition':'data_date=20180503'}");
+        String actual = doc.asXML();
+        String expect = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                "<config>\n" +
+                "    <!-- Global Settings -->\n" +
+                "    <input-path>hdfs://nameservice1/user/hive/warehouse/tmp.db/chenyh2_shuce_custom_hbase_temp_auto</input-path>\n" +
+                "    <output-path>hdfs://nameservice1/tmp/user-profile/hfile/chenyh2/tags__shuce_tag/A/hbase_col</output-path>\n" +
+                "    <htable-name>tags:shuce_tag</htable-name>\n" +
+                "    <field-delimiter>\\u0001</field-delimiter>\n" +
+                "    <collection-item-delimiter>,</collection-item-delimiter>\n" +
+                "    <hbase.zookeeper.quorum>192.168.254.86,192.168.254.96,192.168.254.107</hbase.zookeeper.quorum>\n" +
+                "    <hbase.zookeeper.property.clientPort>2181</hbase.zookeeper.property.clientPort>\n" +
+                "    <hbase.zookeeper.property.maxClientCnxns>400</hbase.zookeeper.property.maxClientCnxns>\n" +
+                "    <hbase.znode.parent>/hbase</hbase.znode.parent>\n" +
+                "\n" +
+                "    <!-- Local Settings -->\n" +
+                "    <mapping-info>\n" +
+                "        <partition>\n" +
+                "            data_date=20180503\n" +
+                "        </partition>\n" +
+                "        <column-mapping>\n" +
+                "            <hive-column-name>imei</hive-column-name>\n" +
+                "            <hive-column-type>string</hive-column-type>\n" +
+                "            <rowkey>true</rowkey>\n" +
+                "        </column-mapping>\n" +
+                "\n" +
+                "        <column-mapping>\n" +
+                "            <hive-column-name>info</hive-column-name>\n" +
+                "            <hive-column-type>string</hive-column-type>\n" +
+                "            <hbase-column-family>A</hbase-column-family>\n" +
+                "            <hbase-column-qualifier>#hbase_col#</hbase-column-qualifier>\n" +
+                "        </column-mapping>\n" +
+                "\n" +
+                "        <column-mapping>\n" +
+                "            <hive-column-name>hbase_col</hive-column-name>\n" +
+                "            <hive-column-type>string</hive-column-type>\n" +
+                "        </column-mapping>\n" +
+                "\n" +
+                "    </mapping-info>\n" +
+                "</config>";
+        assertEquals(expect, actual);
     }
 
     @Test

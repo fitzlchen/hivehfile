@@ -271,6 +271,7 @@ public class XmlUtil {
      */
     public static Document variableReplacement(Document doc, String input) throws DocumentException {
         if(input == null) return doc;
+        input = input.replace(" ", "");
         HashMap<String,String> xmlParmas = MapUtil.convertStringToMap(input);
             /*
              *  将XML转换成字符串，并进行占位符替换

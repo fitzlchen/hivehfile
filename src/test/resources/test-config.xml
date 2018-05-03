@@ -1,44 +1,38 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <config>
     <!-- Global Settings -->
-    <input-path></input-path>
-    <output-path></output-path>
-    <htable-name></htable-name>
+    <input-path>hdfs://nameservice1/user/hive/warehouse/tmp.db/chenyh2_shuce_custom_hbase_temp_auto</input-path>
+    <output-path>${HFILE_POS}</output-path>
+    <htable-name>tags:shuce_tag</htable-name>
     <field-delimiter>\u0001</field-delimiter>
     <collection-item-delimiter>,</collection-item-delimiter>
-    <hbase.zookeeper.quorum></hbase.zookeeper.quorum>
-    <hbase.zookeeper.property.clientPort></hbase.zookeeper.property.clientPort>
-    <hbase.zookeeper.property.maxClientCnxns></hbase.zookeeper.property.maxClientCnxns>
-    <hbase.znode.parent></hbase.znode.parent>
+    <hbase.zookeeper.quorum>192.168.254.86,192.168.254.96,192.168.254.107</hbase.zookeeper.quorum>
+    <hbase.zookeeper.property.clientPort>2181</hbase.zookeeper.property.clientPort>
+    <hbase.zookeeper.property.maxClientCnxns>400</hbase.zookeeper.property.maxClientCnxns>
+    <hbase.znode.parent>/hbase</hbase.znode.parent>
 
     <!-- Local Settings -->
-    <!-- 1 -->
     <mapping-info>
         <partition>
-            data_date=20170717
+            ${partition}
         </partition>
-        <plugins>
-            imei-filter
-        </plugins>
         <column-mapping>
             <hive-column-name>imei</hive-column-name>
             <hive-column-type>string</hive-column-type>
             <rowkey>true</rowkey>
         </column-mapping>
-        <column-mapping>
-            <hive-column-name>value</hive-column-name>
-            <hive-column-type>float</hive-column-type>
-            <hbase-column-family>#family#</hbase-column-family>
-            <hbase-column-qualifier>#feature#</hbase-column-qualifier>
-        </column-mapping>
-        <column-mapping>
-            <hive-column-name>feature</hive-column-name>
-            <hive-column-type>string</hive-column-type>
-        </column-mapping>
-        <column-mapping>
-            <hive-column-name>family</hive-column-name>
-            <hive-column-type>string</hive-column-type>
-        </column-mapping>
-    </mapping-info>
 
+        <column-mapping>
+            <hive-column-name>info</hive-column-name>
+            <hive-column-type>string</hive-column-type>
+            <hbase-column-family>A</hbase-column-family>
+            <hbase-column-qualifier>#hbase_col#</hbase-column-qualifier>
+        </column-mapping>
+
+        <column-mapping>
+            <hive-column-name>hbase_col</hive-column-name>
+            <hive-column-type>string</hive-column-type>
+        </column-mapping>
+
+    </mapping-info>
 </config>
